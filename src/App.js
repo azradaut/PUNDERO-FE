@@ -6,8 +6,8 @@ import {
 } from "react-router-dom";
 import Accounts from './Accounts';
 import Navbar from './components/Navbar';
-import Footer from './components/Footer';
 import Home from "./Home";
+import Vehicles from "./Vehicles";
 
 
 const Layout = () => {
@@ -15,7 +15,6 @@ const Layout = () => {
     <>
       <Navbar />
       <Outlet />
-      <Footer />
     </>
   );
 };
@@ -33,6 +32,8 @@ const router = createBrowserRouter([
         path:"/accounts",
         element: <Accounts />
       },
+      { path: "/vehicles", element: <Vehicles /> }
+
     ]
   }
 ])
