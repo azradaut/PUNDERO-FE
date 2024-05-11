@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, TablePagination, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import ViewItemPopup from './ViewItemPopup'; // Import ViewItemPopup component
+import EditItem from './EditItem'; // Import EditItem component
 
-function ItemTable({ items, headers, onDelete }) {
+function ItemTable({ items, headers, onDelete, onEdit, fields }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewItem, setViewItem] = useState(null); // State to manage the item being viewed
+  const [editItem, setEditItem] = useState(null); // State to manage the item being edited
   const [deleteItem, setDeleteItem] = useState(null); // State to manage the item being deleted
   const [confirmDelete, setConfirmDelete] = useState(false); // State to manage delete confirmation dialog
 
@@ -22,6 +24,10 @@ function ItemTable({ items, headers, onDelete }) {
     setViewItem(item);
   };
 
+  const handleEditItemClick = (item) => {
+    setEditItem(item);
+  };
+
   const handleDeleteItemClick = (item) => {
     setDeleteItem(item);
     setConfirmDelete(true);
@@ -35,6 +41,15 @@ function ItemTable({ items, headers, onDelete }) {
   const handleCloseConfirmDelete = () => {
     setDeleteItem(null);
     setConfirmDelete(false);
+  };
+
+  const handleSaveEdit = (formData) => {
+    onEdit(formData);
+    setEditItem(null);
+  };
+
+  const handleCancelEdit = () => {
+    setEditItem(null);
   };
 
   return (
@@ -60,6 +75,7 @@ function ItemTable({ items, headers, onDelete }) {
                   ))}
                   <TableCell>
                     <Button onClick={() => handleViewItemClick(item)}>View</Button>
+                    <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
                     <Button onClick={() => handleDeleteItemClick(item)}>Delete</Button>
                   </TableCell>
                 </TableRow>
@@ -78,6 +94,16 @@ function ItemTable({ items, headers, onDelete }) {
       />
       {/* View Item Popup */}
       <ViewItemPopup item={viewItem} onClose={() => setViewItem(null)} />
+      {/* Edit Item Dialog */}
+      {editItem && (
+  <Dialog open={!!editItem} onClose={handleCancelEdit}>
+    <DialogTitle>Edit Item</DialogTitle>
+    <DialogContent>
+      <EditItem item={editItem} fields={Object.keys(editItem)} onSave={handleSaveEdit} onCancel={handleCancelEdit} />
+    </DialogContent>
+  </Dialog>
+)}
+
       {/* Delete Confirmation Dialog */}
       <Dialog open={confirmDelete} onClose={handleCloseConfirmDelete}>
         <DialogTitle>Confirm Delete</DialogTitle>
