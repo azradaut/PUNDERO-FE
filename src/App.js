@@ -4,6 +4,7 @@ import {
   Route,
   Outlet,
 } from "react-router-dom";
+import LoginPage from "./LoginPage";
 import Accounts from './Accounts';
 import Navbar from './components/Navbar';
 import Home from "./Home";
@@ -32,7 +33,8 @@ const router = createBrowserRouter([
         path:"/accounts",
         element: <Accounts />
       },
-      { path: "/vehicles", element: <Vehicles /> }
+      { path: "/vehicles", element: <Vehicles /> },
+      { path: "/loginpage", element: <LoginPage /> }
 
     ]
   }

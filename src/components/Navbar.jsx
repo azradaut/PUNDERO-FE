@@ -39,6 +39,13 @@ const Navbar = () => {
           </ListItemIcon>
           <ListItemText primary="Vehicles" />
         </ListItem>
+        <ListItem button component={Link} to="/loginpage">
+          <ListItemIcon>
+            {/* Your icon for Accounts link (optional) */}
+          </ListItemIcon>
+          <ListItemText primary="LogIn" />
+        </ListItem>
+        
         {/* Add more list items as needed */}
       </List>
     </div>
