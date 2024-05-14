@@ -4,11 +4,11 @@ import {
   Route,
   Outlet,
 } from "react-router-dom";
-import LoginPage from "./LoginPage";
-import Accounts from './Accounts';
+import LoginPage from "./pages/LoginPage";
+import Accounts from './pages/Accounts';
 import Navbar from './components/Navbar';
-import Home from "./Home";
-import Vehicles from "./Vehicles";
+import Home from "./pages/Home";
+import Vehicles from "./pages/Vehicles";
 
 
 const Layout = () => {

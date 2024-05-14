@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import ItemTable from './components/ItemTable';
-import FilterBar from './components/FilterBar';
-import AddItem from './components/AddItem';
-import EditItem from './components/EditItem';
+import ItemTable from '../components/ItemTable';
+import FilterBar from '../components/FilterBar';
+import AddItem from '../components/AddItem';
+import EditItem from '../components/EditItem';
 import { Button } from '@mui/material';
 
 function Vehicles() {
