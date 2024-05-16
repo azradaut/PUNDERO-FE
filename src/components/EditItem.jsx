@@ -1,16 +1,22 @@
+// EditItem.jsx
+
 import React, { useState } from 'react';
 import { Button, TextField, DialogActions } from '@mui/material';
 
 function EditItem({ item, fields, onSave, onCancel }) {
-  const [editedItem, setEditedItem] = useState({ ...item }); // Initialize editedItem state with the item data
+  const [editedItem, setEditedItem] = useState({ ...item });
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setEditedItem({ ...editedItem, [name]: value }); // Update the editedItem state with the changed field value
+    setEditedItem({ ...editedItem, [name]: value });
   };
 
   const handleSave = () => {
-    onSave(editedItem); // Call the onSave function passed from the parent component (Vehicles)
+    onSave(editedItem);
+  };
+
+  const handleCancel = () => {
+    onCancel();
   };
 
   return (
@@ -21,7 +27,7 @@ function EditItem({ item, fields, onSave, onCancel }) {
           key={field}
           name={field}
           label={field}
-          value={editedItem[field] || ''} // Set the value from the editedItem state
+          value={editedItem[field] || ''}
           onChange={handleChange}
           fullWidth
           margin="normal"
@@ -31,7 +37,7 @@ function EditItem({ item, fields, onSave, onCancel }) {
         <Button onClick={handleSave} variant="contained" color="primary">
           Save
         </Button>
-        <Button onClick={onCancel}>Cancel</Button>
+        <Button onClick={handleCancel}>Cancel</Button>
       </DialogActions>
     </div>
   );

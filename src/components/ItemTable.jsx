@@ -1,15 +1,17 @@
+// ItemTable.jsx
+
 import React, { useState } from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, TablePagination, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import ViewItemPopup from './ViewItemPopup';
 import EditItem from './EditItem';
 
-function ItemTable({ items, headers, onDelete, onEdit, fields }) {
+function ItemTable({ items, headers, onEdit, onDelete, fields }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewItem, setViewItem] = useState(null);
   const [editItem, setEditItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -28,28 +30,25 @@ function ItemTable({ items, headers, onDelete, onEdit, fields }) {
     setEditItem(item);
   };
 
-  const handleDeleteItemClick = (item) => {
+  const handleDeleteItemButtonClick = (item) => {
     setDeleteItem(item);
-    setConfirmDelete(true);
+    setConfirmDeleteOpen(true);
   };
 
   const handleConfirmDelete = () => {
     onDelete(deleteItem);
-    setConfirmDelete(false);
-  };
-
-  const handleCloseConfirmDelete = () => {
     setDeleteItem(null);
-    setConfirmDelete(false);
+    setConfirmDeleteOpen(false);
   };
 
-  const handleSaveEdit = (formData) => {
-    onEdit(formData); // Call the onEdit function from Vehicles.jsx
-    setEditItem(null);
+  const handleCancelDelete = () => {
+    setDeleteItem(null);
+    setConfirmDeleteOpen(false);
   };
 
-  const handleCancelEdit = () => {
-    setEditItem(null);
+  const handleEditSave = (editedItem) => {
+    onEdit(editedItem); // Pass the edited item to the parent component
+    setEditItem(null); // Close the edit popup
   };
 
   return (
@@ -65,21 +64,21 @@ function ItemTable({ items, headers, onDelete, onEdit, fields }) {
             </TableRow>
           </TableHead>
           <TableBody>
-              {(rowsPerPage > 0
-                ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                : items
-              ).map((item) => (
-                <TableRow key={item.id}>
-                  {headers.map((header) => (
-                    <TableCell key={`${item.id}-${header}`}>{item[header]}</TableCell>
-                  ))}
-                  <TableCell>
-                    <Button onClick={() => handleViewItemClick(item)}>View</Button>
-                    <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
-                    <Button onClick={() => handleDeleteItemClick(item)}>Delete</Button>
-                  </TableCell>
-                </TableRow>
-              ))}
+            {(rowsPerPage > 0
+              ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+              : items
+            ).map((item) => (
+              <TableRow key={item.id}>
+                {headers.map((header) => (
+                  <TableCell key={`${item.id}-${header}`}>{item[header]}</TableCell>
+                ))}
+                <TableCell>
+                  <Button onClick={() => handleViewItemClick(item)}>View</Button>
+                  <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
+                  <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -94,21 +93,21 @@ function ItemTable({ items, headers, onDelete, onEdit, fields }) {
       />
       <ViewItemPopup item={viewItem} onClose={() => setViewItem(null)} />
       {editItem && (
-        <Dialog open={!!editItem} onClose={handleCancelEdit}>
+        <Dialog open={!!editItem} onClose={() => setEditItem(null)}>
           <DialogTitle>Edit Item</DialogTitle>
           <DialogContent>
-            <EditItem item={editItem} fields={Object.keys(editItem)} onSave={handleSaveEdit} onCancel={handleCancelEdit} />
+            <EditItem item={editItem} fields={fields} onSave={handleEditSave} onCancel={() => setEditItem(null)} />
           </DialogContent>
         </Dialog>
       )}
-      <Dialog open={confirmDelete} onClose={handleCloseConfirmDelete}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+      <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete}>
+        <DialogTitle>Delete Item</DialogTitle>
         <DialogContent>
-          Are you sure you want to delete this item?
+          <p>Are you sure you want to delete this item?</p>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseConfirmDelete}>Cancel</Button>
-          <Button onClick={handleConfirmDelete} variant="contained" color="error">Delete</Button>
+          <Button onClick={handleCancelDelete}>Cancel</Button>
+          <Button onClick={handleConfirmDelete}>Delete</Button>
         </DialogActions>
       </Dialog>
     </div>

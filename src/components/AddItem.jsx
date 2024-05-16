@@ -2,9 +2,6 @@ import React, { useState } from 'react';
 import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
 
 function AddItem({ onAdd, onClose, categoryAttributes }) {
-  // Exclude 'id' attribute from categoryAttributes
-  const attributesWithoutId = categoryAttributes.filter(attr => attr !== 'id');
-
   const [formData, setFormData] = useState({});
 
   const handleChange = (event) => {
@@ -23,7 +20,7 @@ function AddItem({ onAdd, onClose, categoryAttributes }) {
     <Dialog open={true} onClose={onClose}>
       <DialogTitle>Add Item</DialogTitle>
       <DialogContent>
-        {attributesWithoutId.map(attribute => (
+        {categoryAttributes && categoryAttributes.map(attribute => (
           <TextField
             key={attribute}
             name={attribute}

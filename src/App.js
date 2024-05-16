@@ -9,6 +9,7 @@ import Accounts from './pages/Accounts';
 import Navbar from './components/Navbar';
 import Home from "./pages/Home";
 import Vehicles from "./pages/Vehicles";
+import Products from "./pages/Products";
 
 
 const Layout = () => {
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
         element: <Accounts />
       },
       { path: "/vehicles", element: <Vehicles /> },
+      { path: "/products", element: <Products /> },
       { path: "/loginpage", element: <LoginPage /> }
 
     ]

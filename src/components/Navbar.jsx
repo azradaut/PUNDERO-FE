@@ -39,6 +39,12 @@ const Navbar = () => {
           </ListItemIcon>
           <ListItemText primary="Vehicles" />
         </ListItem>
+        <ListItem button component={Link} to="/products">
+          <ListItemIcon>
+            {/* Your icon for Accounts link (optional) */}
+          </ListItemIcon>
+          <ListItemText primary="Products" />
+        </ListItem>
         <ListItem button component={Link} to="/loginpage">
           <ListItemIcon>
             {/* Your icon for Accounts link (optional) */}
@@ -74,6 +80,9 @@ const Navbar = () => {
           {/* Your Accounts link content */}
         </Link>
         <Link to="/vehicles">
+          {/* Your Accounts link content */}
+        </Link>
+        <Link to="/products">
           {/* Your Accounts link content */}
         </Link>
         {/* Add more links as needed */}
