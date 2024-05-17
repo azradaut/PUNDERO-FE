@@ -51,6 +51,12 @@ const Navbar = () => {
           </ListItemIcon>
           <ListItemText primary="LogIn" />
         </ListItem>
+        <ListItem button component={Link} to="/mapcoordinator">
+          <ListItemIcon>
+            {/* Your icon for Accounts link (optional) */}
+          </ListItemIcon>
+          <ListItemText primary="MapCoordinator" />
+        </ListItem>
         
         {/* Add more list items as needed */}
       </List>
@@ -85,7 +91,10 @@ const Navbar = () => {
         <Link to="/products">
           {/* Your Accounts link content */}
         </Link>
-        {/* Add more links as needed */}
+        <Link to="/mapcoordinator">
+          {/* Add more links as needed */}
+        </Link>
+        
       </Toolbar>
       <Drawer
         anchor="left"

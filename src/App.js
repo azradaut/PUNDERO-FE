@@ -10,6 +10,7 @@ import Navbar from './components/Navbar';
 import Home from "./pages/Home";
 import Vehicles from "./pages/Vehicles";
 import Products from "./pages/Products";
+import MapCoordinator from "./pages/MapCoordinator";
 
 
 const Layout = () => {
@@ -36,7 +37,8 @@ const router = createBrowserRouter([
       },
       { path: "/vehicles", element: <Vehicles /> },
       { path: "/products", element: <Products /> },
-      { path: "/loginpage", element: <LoginPage /> }
+      { path: "/loginpage", element: <LoginPage /> },
+      { path: "/mapcoordinator", element: <MapCoordinator /> }
 
     ]
   }
