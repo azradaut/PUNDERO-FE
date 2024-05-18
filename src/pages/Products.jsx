@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+/*import React, { useState, useEffect } from 'react';
 import ItemTable from '../components/ItemTable';
 import FilterBar from '../components/FilterBar';
 import AddItem from '../components/AddItem';
@@ -142,4 +142,4 @@ function Products() {
   );
 }
 
-export default Products;
+export default Products;*/

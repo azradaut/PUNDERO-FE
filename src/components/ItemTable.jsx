@@ -3,13 +3,13 @@ import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper
 import ViewItemPopup from './ViewItemPopup';
 import EditItem from './EditItem';
 
-function ItemTable({ items, headers, onEdit, onDelete, fields }) {
+function ItemTable({ items, headers, onDelete, onSave, fields }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewItem, setViewItem] = useState(null);
-  const [editItem, setEditItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -42,11 +42,6 @@ function ItemTable({ items, headers, onEdit, onDelete, fields }) {
   const handleCancelDelete = () => {
     setDeleteItem(null);
     setConfirmDeleteOpen(false);
-  };
-
-  const handleEditSave = (editedItem) => {
-    onEdit(editedItem); // Pass the edited item to the parent component
-    setEditItem(null); // Close the edit popup
   };
 
   return (
@@ -91,12 +86,12 @@ function ItemTable({ items, headers, onEdit, onDelete, fields }) {
       />
       <ViewItemPopup item={viewItem} onClose={() => setViewItem(null)} />
       {editItem && (
-        <Dialog open={!!editItem} onClose={() => setEditItem(null)}>
-          <DialogTitle>Edit Item</DialogTitle>
-          <DialogContent>
-            <EditItem item={editItem} fields={fields} onSave={handleEditSave} onCancel={() => setEditItem(null)} />
-          </DialogContent>
-        </Dialog>
+        <EditItem
+          item={editItem}
+          onSave={onSave}
+          onClose={() => setEditItem(null)}
+          categoryAttributes={Object.keys(items[0] || {})}
+        />
       )}
       <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete}>
         <DialogTitle>Delete Item</DialogTitle>
