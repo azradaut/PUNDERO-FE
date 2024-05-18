@@ -5,8 +5,7 @@ import {
     Map,
     AdvancedMarker,
     Pin,
-    InfoWindow,
-    useMap
+    InfoWindow
 } from '@vis.gl/react-google-maps';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 
@@ -14,6 +13,7 @@ const PoiMarkers = ({ pois, map }) => {
     const [markers, setMarkers] = useState({});
     const [selectedPoi, setSelectedPoi] = useState(null);
     const infoWindowRef = useRef(null);
+    const markersRef = useRef({}); // Ref to track markers
 
     useEffect(() => {
         if (map && !infoWindowRef.current) {
@@ -23,7 +23,7 @@ const PoiMarkers = ({ pois, map }) => {
     }, [map]);
 
     useEffect(() => {
-        if (map && markers) {
+        if (map) {
             const clusterer = new MarkerClusterer({ map });
             clusterer.clearMarkers();
             clusterer.addMarkers(Object.values(markers));
@@ -31,34 +31,31 @@ const PoiMarkers = ({ pois, map }) => {
     }, [markers, map]);
 
     const setMarkerRef = (marker, poi) => {
-        if (marker && markers[poi.key]) return;
-        if (!marker && !markers[poi.key]) return;
+        if (!marker || markersRef.current[poi.key]) return;
 
-        setMarkers(prev => {
-            if (marker) {
-                console.log(`Adding click listener for marker: ${poi.name}`);
-                marker.addListener('click', () => {
-                    setSelectedPoi(poi);
-                    if (infoWindowRef.current) {
-                        const content = `
-                            <div>
-                                <h3>${poi.type === 'warehouse' ? 'Warehouse' : 'Store'}: ${poi.name || 'Unnamed'}</h3>
-                                <p>Address: ${poi.address}</p>
-                            </div>
-                        `;
-                        console.log(`Setting InfoWindow content for: ${poi.name}`);
-                        infoWindowRef.current.setContent(content);
-                        console.log(`Opening InfoWindow for: ${poi.name}`);
-                        infoWindowRef.current.open(map, marker);
-                    } else {
-                        console.log('InfoWindow is not initialized');
-                    }
-                });
-                return { ...prev, [poi.key]: marker };
+        markersRef.current[poi.key] = marker;
+        setMarkers(prev => ({
+            ...prev,
+            [poi.key]: marker
+        }));
+
+        console.log(`Adding click listener for marker: ${poi.name}`);
+        marker.addListener('click', () => {
+            setSelectedPoi(poi);
+            if (infoWindowRef.current) {
+                const content = `
+                    <div>
+                        <h3>${poi.type === 'warehouse' ? 'Warehouse' : poi.type === 'store' ? 'Store' : 'Driver'}: ${poi.name || 'Unnamed'}</h3>
+                        <p>Address: ${poi.address || ''}</p>
+                        ${poi.type === 'driver' ? `<p>Phone: ${poi.phone}</p>` : ''}
+                    </div>
+                `;
+                console.log(`Setting InfoWindow content for: ${poi.name}`);
+                infoWindowRef.current.setContent(content);
+                console.log(`Opening InfoWindow for: ${poi.name}`);
+                infoWindowRef.current.open(map, marker);
             } else {
-                const newMarkers = { ...prev };
-                delete newMarkers[poi.key];
-                return newMarkers;
+                console.log('InfoWindow is not initialized');
             }
         });
     };
@@ -73,7 +70,7 @@ const PoiMarkers = ({ pois, map }) => {
                     clickable={true}
                 >
                     <Pin
-                        background={poi.type === 'warehouse' ? '#FF0000' : '#0000FF'}
+                        background={poi.type === 'warehouse' ? '#FF0000' : poi.type === 'store' ? '#0000FF' : '#00FF00'}
                         glyphColor={'#FFFFFF'}
                         borderColor={'#000000'}
                     />
@@ -85,8 +82,9 @@ const PoiMarkers = ({ pois, map }) => {
                     onCloseClick={() => setSelectedPoi(null)}
                 >
                     <div>
-                        <h3>{selectedPoi.type === 'warehouse' ? 'Warehouse' : 'Store'}: {selectedPoi.name || 'Unnamed'}</h3>
-                        <p>Address: {selectedPoi.address}</p>
+                        <h3>{selectedPoi.type === 'warehouse' ? 'Warehouse' : selectedPoi.type === 'store' ? 'Store' : 'Driver'}: {selectedPoi.name || 'Unnamed'}</h3>
+                        <p>Address: {selectedPoi.address || ''}</p>
+                        {selectedPoi.type === 'driver' && <p>Phone: {selectedPoi.phone}</p>}
                     </div>
                 </InfoWindow>
             )}
@@ -99,39 +97,54 @@ const MapCoordinator = () => {
     const [locations, setLocations] = useState([]);
     const mapRef = useRef(null);
 
+    const fetchData = async () => {
+        try {
+            const [storesResponse, warehousesResponse, driversResponse] = await Promise.all([
+                axios.get('http://localhost:8515/api/Stores/GetStores'),
+                axios.get('http://localhost:8515/api/Warehouses/GetWarehouses'),
+                axios.get('http://localhost:8515/api/Location/getall')
+            ]);
+
+            const stores = storesResponse.data.map(store => ({
+                key: `store-${store.id || Math.random().toString(36).substr(2, 9)}`,
+                location: { lat: store.latitude, lng: store.longitude },
+                name: store.name,
+                address: store.address,
+                type: 'store'
+            }));
+
+            const warehouses = warehousesResponse.data.map(warehouse => ({
+                key: `warehouse-${warehouse.id || Math.random().toString(36).substr(2, 9)}`,
+                location: { lat: warehouse.latitude, lng: warehouse.longitude },
+                name: warehouse.name || 'Unnamed Warehouse', //Jer imamo skladišta bez imena
+                address: warehouse.address,
+                type: 'warehouse'
+            }));
+
+            const drivers = driversResponse.data.map(driver => ({
+                key: `driver-${driver.driverId}`,
+                location: { lat: driver.lkLatitude, lng: driver.lkLongitude },
+                name: `${driver.firstName} ${driver.lastName}`,
+                phone: driver.mobilePhoneNumber,
+                type: 'driver'
+            }));
+
+            console.log('Fetched stores:', stores);
+            console.log('Fetched warehouses:', warehouses);
+            console.log('Fetched drivers:', drivers);
+            setLocations([...stores, ...warehouses, ...drivers]);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
+
     useEffect(() => {
-        const fetchStoresAndWarehouses = async () => {
-            try {
-                const [storesResponse, warehousesResponse] = await Promise.all([
-                    axios.get('http://localhost:8515/api/Stores/GetStores'),
-                    axios.get('http://localhost:8515/api/Warehouses/GetWarehouses')
-                ]);
+        fetchData();
+        const interval = setInterval(() => {
+            fetchData();
+        }, 10000); // Fetch data every 10 seconds
 
-                const stores = storesResponse.data.map(store => ({
-                    key: `store-${store.id || Math.random().toString(36).substr(2, 9)}`,
-                    location: { lat: store.latitude, lng: store.longitude },
-                    name: store.name,
-                    address: store.address,
-                    type: 'store'
-                }));
-
-                const warehouses = warehousesResponse.data.map(warehouse => ({
-                    key: `warehouse-${warehouse.id || Math.random().toString(36).substr(2, 9)}`,
-                    location: { lat: warehouse.latitude, lng: warehouse.longitude },
-                    name: warehouse.name || 'Unnamed Warehouse', // Handle undefined name
-                    address: warehouse.address,
-                    type: 'warehouse'
-                }));
-
-                console.log('Fetched stores:', stores);
-                console.log('Fetched warehouses:', warehouses);
-                setLocations([...stores, ...warehouses]);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-
-        fetchStoresAndWarehouses();
+        return () => clearInterval(interval); // Cleanup interval on component unmount
     }, []);
 
     const handleLoad = (map) => {

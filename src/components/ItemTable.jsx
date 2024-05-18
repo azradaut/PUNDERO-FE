@@ -1,5 +1,3 @@
-// ItemTable.jsx
-
 import React, { useState } from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, TablePagination, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
 import ViewItemPopup from './ViewItemPopup';

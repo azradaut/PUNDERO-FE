@@ -1,5 +1,3 @@
-// EditItem.jsx
-
 import React, { useState } from 'react';
 import { Button, TextField, DialogActions } from '@mui/material';
 
