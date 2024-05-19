@@ -1,57 +1,50 @@
-import React from 'react';
-import { Grid, Paper, Typography, TextField, Button, ThemeProvider, createTheme } from '@mui/material';
-import { makeStyles } from '@mui/styles';
+import React, { useState } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-// Define a custom theme
-const theme = createTheme();
+const LoginPage = () => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const navigate = useNavigate();
 
-function LoginPage() {
-  return (
-    <ThemeProvider theme={theme}>
-      <Grid container style={{ height: '100vh' }}>
-        <Grid item xs={6} style={{ backgroundColor: '#fff', padding: '2rem', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <Typography variant="h4" align="center" gutterBottom>Welcome!</Typography>
-          <Paper elevation={3} style={{ padding: '2rem' }}>
-            <form>
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                id="email"
-                label="Email Address"
-                name="email"
-                autoComplete="email"
-              />
-              <TextField
-                variant="outlined"
-                margin="normal"
-                required
-                fullWidth
-                name="password"
-                label="Password"
-                type="password"
-                id="password"
-                autoComplete="current-password"
-              />
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                color="primary"
-                style={{ marginTop: '2rem' }}
-              >
-                Sign In
-              </Button>
-            </form>
-          </Paper>
-        </Grid>
-        <Grid item xs={6} style={{ backgroundColor: theme.palette.primary.main, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {/* Content for the right panel */}
-        </Grid>
-      </Grid>
-    </ThemeProvider>
-  );
-}
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        try {
+            console.log('Submitting login request:', { email, password });
+            const response = await axios.post('http://localhost:8515/api/Authentication/login', { email, password });
+            console.log('Full response from server:', response);
+            console.log('Response data from server:', response.data);
+
+            const { token, type } = response.data; // Correct property names
+
+            // Check if token and type are defined
+            if (token && type !== undefined) {
+                localStorage.setItem('token', token);
+                localStorage.setItem('role', type);
+
+                console.log('Stored Token:', localStorage.getItem('token'));
+                console.log('Stored Role:', localStorage.getItem('role'));
+
+                if (type === 1) {
+                    navigate('/coordinator');
+                } else if (type === 2) {
+                    navigate('/client');
+                }
+            } else {
+                console.error('Token or Type is undefined:', { token, type });
+            }
+        } catch (error) {
+            console.error('Login failed:', error);
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit}>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" required />
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" required />
+            <button type="submit">Login</button>
+        </form>
+    );
+};
 
 export default LoginPage;
