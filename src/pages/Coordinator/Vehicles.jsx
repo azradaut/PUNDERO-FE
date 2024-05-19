@@ -47,9 +47,7 @@ function Vehicles() {
       if (!response.ok) {
         throw new Error('Failed to add vehicle');
       }
-      const newItem = await response.json(); // Get the newly added item
-      setVehicles((prevVehicles) => [...prevVehicles, newItem]); // Add the new item to the vehicles state
-      setFilteredVehicles((prevVehicles) => [...prevVehicles, newItem]); // Add the new item to the filtered vehicles state
+      fetchData();
     } catch (error) {
       console.error('Error adding vehicle:', error);
     }
@@ -67,17 +65,7 @@ function Vehicles() {
       if (!response.ok) {
         throw new Error('Failed to update vehicle');
       }
-      const updatedItem = await response.json();
-      setVehicles((prevVehicles) =>
-        prevVehicles.map((vehicle) =>
-          vehicle.idVehicle === updatedItem.idVehicle ? updatedItem : vehicle
-        )
-      );
-      setFilteredVehicles((prevVehicles) =>
-        prevVehicles.map((vehicle) =>
-          vehicle.idVehicle === updatedItem.idVehicle ? updatedItem : vehicle
-        )
-      );
+      fetchData();
     } catch (error) {
       console.error('Error updating vehicle:', error);
     }
@@ -92,12 +80,7 @@ function Vehicles() {
       if (!response.ok) {
         throw new Error('Failed to delete vehicle');
       }
-      setVehicles((prevVehicles) =>
-        prevVehicles.filter((vehicle) => vehicle.idVehicle !== item.idVehicle)
-      );
-      setFilteredVehicles((prevVehicles) =>
-        prevVehicles.filter((vehicle) => vehicle.idVehicle !== item.idVehicle)
-      );
+      fetchData();
     } catch (error) {
       console.error('Error deleting vehicle:', error);
     }
