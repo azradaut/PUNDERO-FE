@@ -3,7 +3,7 @@ import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper
 import ViewItemPopup from './ViewItemPopup';
 import EditItem from './EditItem';
 
-function ItemTable({ items, headers, onDelete, onSave, fields }) {
+function ItemTable({ items, headers, onDelete, onSave, fields, customActions }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewItem, setViewItem] = useState(null);
@@ -66,9 +66,13 @@ function ItemTable({ items, headers, onDelete, onSave, fields }) {
                   <TableCell key={`${item.id}-${header}`}>{item[header]}</TableCell>
                 ))}
                 <TableCell>
-                  <Button onClick={() => handleViewItemClick(item)}>View</Button>
-                  <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
-                  <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
+                  {customActions ? customActions(item) : (
+                    <>
+                      <Button onClick={() => handleViewItemClick(item)}>View</Button>
+                      <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
+                      <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
