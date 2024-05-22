@@ -1,9 +1,23 @@
 import React, { useState } from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, TablePagination, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  TablePagination,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
 import ViewItemPopup from './ViewItemPopup';
 import EditItem from './EditItem';
 
-function ItemTable({ items, headers, onDelete, onSave, fields, customActions }) {
+function ItemTable({ items, headers, onDelete, onEdit, fields, customActions }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewItem, setViewItem] = useState(null);
@@ -25,6 +39,7 @@ function ItemTable({ items, headers, onDelete, onSave, fields, customActions }) 
   };
 
   const handleEditItemClick = (item) => {
+    console.log("Edit item clicked: ", item);
     setEditItem(item);
   };
 
@@ -44,6 +59,15 @@ function ItemTable({ items, headers, onDelete, onSave, fields, customActions }) 
     setConfirmDeleteOpen(false);
   };
 
+  const handleSaveEditItem = async (updatedItem) => {
+    await onEdit(updatedItem);
+    setEditItem(null);
+  };
+
+  const getNestedValue = (item, path) => {
+    return path.split('.').reduce((obj, key) => (obj && obj[key] !== 'undefined' ? obj[key] : ''), item);
+  };
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <TableContainer component={Paper}>
@@ -61,12 +85,16 @@ function ItemTable({ items, headers, onDelete, onSave, fields, customActions }) 
               ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               : items
             ).map((item) => (
-              <TableRow key={item.id}>
+              <TableRow key={item.idVehicle}>
                 {headers.map((header) => (
-                  <TableCell key={`${item.id}-${header}`}>{item[header]}</TableCell>
+                  <TableCell key={`${item.idVehicle}-${header}`}>
+                    {getNestedValue(item, header)}
+                  </TableCell>
                 ))}
                 <TableCell>
-                  {customActions ? customActions(item) : (
+                  {customActions ? (
+                    customActions(item)
+                  ) : (
                     <>
                       <Button onClick={() => handleViewItemClick(item)}>View</Button>
                       <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
@@ -92,9 +120,9 @@ function ItemTable({ items, headers, onDelete, onSave, fields, customActions }) 
       {editItem && (
         <EditItem
           item={editItem}
-          onSave={onSave}
+          onSave={handleSaveEditItem}
           onClose={() => setEditItem(null)}
-          categoryAttributes={Object.keys(items[0] || {})}
+          fields={fields}
         />
       )}
       <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete}>

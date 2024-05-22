@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { Button } from '@mui/material';
 import ItemTable from '../../components/ItemTable';
 import FilterBar from '../../components/FilterBar';
 import AddItem from '../../components/AddItem';
-import { Button } from '@mui/material';
+
+const vehicleFields = [
+  { name: 'registration', label: 'Registration', required: true, pattern: '^[A-Z]\\d{2}-[A-Z]-\\d{3}$', errorMessage: "Registration format must be 'A11-B-222'" },
+  { name: 'issueDate', label: 'Issue Date', required: true, type: 'date', placeholder: 'yyyy-MM-dd' },
+  { name: 'expiryDate', label: 'Expiry Date', required: true, type: 'date', placeholder: 'yyyy-MM-dd' },
+  { name: 'brand', label: 'Brand', required: true, maxLength: 20 },
+  { name: 'model', label: 'Model', required: true, maxLength: 20 },
+  { name: 'color', label: 'Color', required: true, maxLength: 20 }
+];
 
 function Vehicles() {
   const [vehicles, setVehicles] = useState([]);
@@ -49,7 +58,11 @@ function Vehicles() {
       }
       fetchData();
     } catch (error) {
-      console.error('Error adding vehicle:', error);
+      if (error.response && error.response.data && error.response.data.errors) {
+        throw error.response.data.errors;
+      } else {
+        console.error('Error adding vehicle:', error);
+      }
     }
   };
 
@@ -76,7 +89,6 @@ function Vehicles() {
       const response = await fetch(`http://localhost:8515/api/Vehicle/DeleteVehicle/${item.idVehicle}`, {
         method: 'DELETE',
       });
-
       if (!response.ok) {
         throw new Error('Failed to delete vehicle');
       }
@@ -94,15 +106,17 @@ function Vehicles() {
       <FilterBar onSearchChange={handleSearchChange} />
       <Button onClick={() => setShowAddDialog(true)}>Add</Button>
       {showAddDialog && (
-        <AddItem onAdd={handleAddItem} onClose={() => setShowAddDialog(false)} categoryAttributes={Object.keys(vehicles[0] || {})} />
+        <AddItem onAdd={handleAddItem} onClose={() => setShowAddDialog(false)} fields={vehicleFields} />
       )}
       {filteredVehicles.length > 0 ? (
         <ItemTable
           items={filteredVehicles}
-          headers={Object.keys(vehicles[0] || {})}
+          headers={Object.keys(vehicles[0] || {}).map(header =>
+            header === "assignedDriver" ? "assignedDriver.driverName" :
+            header === "assignmentType" ? "assignmentType" : header)}
           onDelete={handleDeleteItemClick}
-          onSave={handleEditItem}
-          fields={categoryAttributes}
+          onEdit={handleEditItem}
+          fields={vehicleFields}
         />
       ) : (
         <p>No vehicles match the current filters.</p>

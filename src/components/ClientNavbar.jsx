@@ -10,7 +10,7 @@ import NotificationPopup from '../pages/NotificationPopup'; // Import Notificati
 const ClientNavbar = () => {
     const [open, setOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false); // State for notification popup
-    const { notifications } = useNotification();
+    const { notifications = [] } = useNotification(); // Ensure notifications is an array
     const unseenCount = notifications.filter(notification => !notification.seen).length;
 
     const drawerContent = (

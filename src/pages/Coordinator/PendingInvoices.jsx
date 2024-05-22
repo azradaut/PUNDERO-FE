@@ -21,7 +21,7 @@ const PendingInvoices = () => {
     }, []);
 
     const fetchInvoices = async () => {
-        const response = await axios.get('http://localhost:8515/api/Inv');
+        const response = await axios.get('http://localhost:8515/api/Inv/pending');
         const invoices = response.data;
 
         for (let invoice of invoices) {

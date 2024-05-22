@@ -14,9 +14,10 @@ export const NotificationProvider = ({ children }) => {
         const fetchNotifications = async () => {
             try {
                 const response = await axios.get('http://localhost:8515/api/Notification');
-                setNotifications(response.data);
+                setNotifications(response.data || []);
             } catch (error) {
                 console.error('Error fetching notifications:', error);
+                setNotifications([]); // Ensure notifications is always an array
             }
         };
 
