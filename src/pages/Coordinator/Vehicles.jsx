@@ -3,6 +3,7 @@ import { Button } from '@mui/material';
 import ItemTable from '../../components/ItemTable';
 import FilterBar from '../../components/FilterBar';
 import AddItem from '../../components/AddItem';
+import Alerts from '../../components/Alerts'; // Import the Alerts component
 
 const vehicleFields = [
   { name: 'registration', label: 'Registration', required: true, pattern: '^[A-Z]\\d{2}-[A-Z]-\\d{3}$', errorMessage: "Registration format must be 'A11-B-222'" },
@@ -18,6 +19,9 @@ function Vehicles() {
   const [filteredVehicles, setFilteredVehicles] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('success');
 
   useEffect(() => {
     fetchData();
@@ -56,13 +60,19 @@ function Vehicles() {
       if (!response.ok) {
         throw new Error('Failed to add vehicle');
       }
+      setAlertMessage('Vehicle added successfully!');
+      setAlertSeverity('success');
       fetchData();
     } catch (error) {
+      setAlertMessage('Error adding vehicle.');
+      setAlertSeverity('error');
       if (error.response && error.response.data && error.response.data.errors) {
         throw error.response.data.errors;
       } else {
         console.error('Error adding vehicle:', error);
       }
+    } finally {
+      setAlertOpen(true);
     }
   };
 
@@ -78,9 +88,15 @@ function Vehicles() {
       if (!response.ok) {
         throw new Error('Failed to update vehicle');
       }
+      setAlertMessage('Vehicle updated successfully!');
+      setAlertSeverity('success');
       fetchData();
     } catch (error) {
+      setAlertMessage('Error updating vehicle.');
+      setAlertSeverity('error');
       console.error('Error updating vehicle:', error);
+    } finally {
+      setAlertOpen(true);
     }
   };
 
@@ -92,10 +108,20 @@ function Vehicles() {
       if (!response.ok) {
         throw new Error('Failed to delete vehicle');
       }
+      setAlertMessage('Vehicle deleted successfully!');
+      setAlertSeverity('success');
       fetchData();
     } catch (error) {
+      setAlertMessage('Error deleting vehicle.');
+      setAlertSeverity('error');
       console.error('Error deleting vehicle:', error);
+    } finally {
+      setAlertOpen(true);
     }
+  };
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
   };
 
   const categoryAttributes = vehicles.length > 0 ? Object.keys(vehicles[0]).filter(attr => attr !== 'id') : [];
@@ -121,6 +147,7 @@ function Vehicles() {
       ) : (
         <p>No vehicles match the current filters.</p>
       )}
+      <Alerts open={alertOpen} message={alertMessage} severity={alertSeverity} onClose={handleAlertClose} />
     </div>
   );
 }
