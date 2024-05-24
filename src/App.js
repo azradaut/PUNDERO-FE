@@ -21,6 +21,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import CoordinatorNavbar from './components/CoordinatorNavbar';
 import ClientNavbar from './components/ClientNavbar';
 import { NotificationProvider } from './contexts/NotificationContext'; // Import the NotificationProvider
+import Coordinators from './pages/Coordinator/Coordinators';
 
 const CoordinatorLayout = () => {
   return (
@@ -63,11 +64,12 @@ function App() {
             <Route path="invoices" element={<Invoices />} />
             <Route path="pending-invoices" element={<PendingInvoices />} />
             <Route path="notifications" element={<Notifications />} />
+            <Route path="coordinators" element={<Coordinators />} />
           </Route>
           <Route
             path="/client"
             element={
-              <ProtectedRoute role={2}>
+              <ProtectedRoute role={3}>
                 <ClientLayout />
               </ProtectedRoute>
             }

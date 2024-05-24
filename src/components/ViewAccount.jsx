@@ -1,0 +1,48 @@
+import React from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, CardMedia } from '@mui/material';
+
+function ViewAccount({ account, onClose }) {
+  const { idCoordinator, firstName, lastName, email, type, image, qualification, description } = account;
+
+  const getTypeLabel = (type) => {
+    switch (type) {
+      case 'Coordinator':
+        return 'Coordinator';
+      case 'Client':
+        return 'Client';
+      case 'Driver':
+        return 'Driver';
+      default:
+        return 'Unknown';
+    }
+  };
+
+  return (
+    <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Account Details</DialogTitle>
+      <DialogContent>
+        <Typography variant="body1"><strong>ID:</strong> {idCoordinator}</Typography>
+        <Typography variant="body1"><strong>First Name:</strong> {firstName}</Typography>
+        <Typography variant="body1"><strong>Last Name:</strong> {lastName}</Typography>
+        <Typography variant="body1"><strong>Email:</strong> {email}</Typography>
+        <Typography variant="body1"><strong>Type:</strong> {getTypeLabel(type)}</Typography>
+        {qualification && <Typography variant="body1"><strong>Qualification:</strong> {qualification}</Typography>}
+        {description && <Typography variant="body1"><strong>Description:</strong> {description}</Typography>}
+        {image && (
+          <CardMedia
+          component="img"
+          height="300"
+          style={{ objectFit: 'contain' }}
+          image={`http://localhost:8515/images/profile_images/${image}`}
+          alt="Profile Image"
+        />
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose} color="primary">Close</Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
+export default ViewAccount;

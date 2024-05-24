@@ -20,7 +20,7 @@ const LoginPage = () => {
 
         try {
             console.log('Submitting login request:', { email, password });
-            const response = await axios.post('http://localhost:8515/api/Auth/login', { email, password });
+            const response = await axios.post('http://localhost:8515/api/Authentication/login', { email, password });
             console.log('Full response from server:', response);
             console.log('Response data from server:', response.data);
 
@@ -35,7 +35,7 @@ const LoginPage = () => {
 
                 if (type === 1) {
                     navigate('/coordinator');
-                } else if (type === 2) {
+                } else if (type === 3) {
                     navigate('/client');
                 }
             } else {

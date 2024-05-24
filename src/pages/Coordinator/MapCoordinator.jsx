@@ -142,7 +142,7 @@ const MapCoordinator = () => {
         fetchData();
         const interval = setInterval(() => {
             fetchData();
-        }, 10000); // Fetch data every 10 seconds
+        }, 5000); // Fetch data every 10 seconds
 
         return () => clearInterval(interval); // Cleanup interval on component unmount
     }, []);

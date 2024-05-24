@@ -34,6 +34,9 @@ const CoordinatorNavbar = () => {
                 <ListItem button component={Link} to="/coordinator/vehicles">
                     <ListItemText primary="Vehicles" />
                 </ListItem>
+                <ListItem button component={Link} to="/coordinator/coordinators">
+                    <ListItemText primary="Coordinators" />
+                </ListItem>
                 <ListItem button component={Link} to="/coordinator/map">
                     <ListItemText primary="Map" />
                 </ListItem>
