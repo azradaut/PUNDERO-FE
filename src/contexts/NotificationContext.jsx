@@ -12,12 +12,19 @@ export const NotificationProvider = ({ children }) => {
 
     useEffect(() => {
         const fetchNotifications = async () => {
-            try {
-                const response = await axios.get('http://localhost:8515/api/Notification');
-                setNotifications(response.data || []);
-            } catch (error) {
-                console.error('Error fetching notifications:', error);
-                setNotifications([]); // Ensure notifications is always an array
+            const role = localStorage.getItem('role');
+            const storeName = localStorage.getItem('storeName');
+            if (role && storeName) {
+                try {
+                    const response = await axios.get(`http://localhost:8515/api/Notifications/${role}/${storeName}`);
+                    setNotifications(response.data || []);
+                } catch (error) {
+                    console.error('Error fetching notifications:', error);
+                    setNotifications([]); // Ensure notifications is always an array
+                }
+            } else {
+                console.error('Role or StoreName is not available in local storage');
+                setNotifications([]);
             }
         };
 

@@ -1,8 +1,9 @@
-// src/pages/Client/ClientDashboard.jsx
 import React from 'react';
 
-const ClientDashboard = () => {
-  return <h2>Client Dashboard</h2>;
+const CoordinatorDashboard = () => {
+  const firstName = localStorage.getItem('firstName');
+
+  return <h2>Welcome, {firstName}</h2>;
 };
 
-export default ClientDashboard;
+export default CoordinatorDashboard;

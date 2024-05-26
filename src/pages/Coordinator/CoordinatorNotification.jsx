@@ -1,3 +1,4 @@
+// CoordinatorNavbar.jsx
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge, Box } from '@mui/material';
@@ -7,18 +8,12 @@ import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useNotification } from '../contexts/NotificationContext';
 import NotificationPopup from '../pages/NotificationPopup';
 
-const ClientNavbar = () => {
+const CoordinatorNavbar = () => {
     const [open, setOpen] = useState(false);
     const [notificationsOpen, setNotificationsOpen] = useState(false);
-    const { notifications = [] } = useNotification();
+    const { notifications } = useNotification();
     const unseenCount = notifications.filter(notification => !notification.seen).length;
     const firstName = localStorage.getItem('firstName');
-    const storeName = localStorage.getItem('storeName');
-
-    const handleLogout = () => {
-        localStorage.clear();
-        window.location.href = '/login';
-    };
 
     const drawerContent = (
         <div>
@@ -32,13 +27,28 @@ const ClientNavbar = () => {
             </Toolbar>
             <Divider />
             <List>
-                <ListItem button component={Link} to="/client/dashboard">
+                <ListItem button component={Link} to="/coordinator/dashboard">
                     <ListItemText primary="Dashboard" />
                 </ListItem>
-                <ListItem button component={Link} to="/client/products">
-                    <ListItemText primary="Products" />
+                <ListItem button component={Link} to="/coordinator/accounts">
+                    <ListItemText primary="Accounts" />
                 </ListItem>
-                <ListItem button onClick={handleLogout}>
+                <ListItem button component={Link} to="/coordinator/vehicles">
+                    <ListItemText primary="Vehicles" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/coordinators">
+                    <ListItemText primary="Coordinators" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/map">
+                    <ListItemText primary="Map" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/invoices">
+                    <ListItemText primary="Invoices" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/pending-invoices">
+                    <ListItemText primary="Pending Invoices" />
+                </ListItem>
+                <ListItem button component={Link} to="/">
                     <ListItemText primary="Logout" />
                 </ListItem>
             </List>
@@ -62,7 +72,7 @@ const ClientNavbar = () => {
                 </Typography>
                 <Box sx={{ flexGrow: 1 }} />
                 <Typography variant="h6" component="div" sx={{ flexGrow: 0 }}>
-                    {firstName} ({storeName})
+                    {firstName} (PUNDERO)
                 </Typography>
                 <IconButton color="inherit" onClick={() => setNotificationsOpen(!notificationsOpen)}>
                     <Badge badgeContent={unseenCount} color="secondary">
@@ -83,4 +93,4 @@ const ClientNavbar = () => {
     );
 };
 
-export default ClientNavbar;
+export default CoordinatorNavbar;

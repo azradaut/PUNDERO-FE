@@ -1,17 +1,38 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge } from '@mui/material';
+import { Link, useNavigate } from 'react-router-dom';
+import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useNotification } from '../contexts/NotificationContext';
-import NotificationPopup from '../pages/NotificationPopup'; // Import NotificationPopup
+import NotificationPopup from '../pages/NotificationPopup';
+import axios from 'axios';
 
 const CoordinatorNavbar = () => {
     const [open, setOpen] = useState(false);
-    const [notificationsOpen, setNotificationsOpen] = useState(false); // State for notification popup
-    const { notifications } = useNotification();
+    const [notificationsOpen, setNotificationsOpen] = useState(false);
+    const { notifications, setNotifications } = useNotification();
     const unseenCount = notifications.filter(notification => !notification.seen).length;
+    const firstName = localStorage.getItem('firstName');
+    const navigate = useNavigate();
+
+    const handleMarkAsSeen = async (id) => {
+        try {
+            await axios.put(`http://localhost:8515/api/Notification/${id}/markAsSeen`);
+            setNotifications(prev => prev.filter(n => n.idNotification !== id));
+        } catch (error) {
+            console.error('Error marking notification as seen:', error);
+        }
+    };
+
+    const handleViewNotification = (notification) => {
+        handleMarkAsSeen(notification.idNotification);
+        if (notification.message.includes('pending approval')) {
+            navigate('/coordinator/pending-invoices');
+        } else if (notification.message.includes('completed') || notification.message.includes('failed')) {
+            navigate('/coordinator/invoices');
+        }
+    };
 
     const drawerContent = (
         <div>
@@ -36,6 +57,12 @@ const CoordinatorNavbar = () => {
                 </ListItem>
                 <ListItem button component={Link} to="/coordinator/coordinators">
                     <ListItemText primary="Coordinators" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/clients">
+                    <ListItemText primary="Clients" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/drivers">
+                    <ListItemText primary="Drivers" />
                 </ListItem>
                 <ListItem button component={Link} to="/coordinator/map">
                     <ListItemText primary="Map" />
@@ -68,6 +95,10 @@ const CoordinatorNavbar = () => {
                 <Typography variant="h6" noWrap component="div">
                     PUNDERO
                 </Typography>
+                <Box sx={{ flexGrow: 1 }} />
+                <Typography variant="h6" component="div" sx={{ flexGrow: 0 }}>
+                    {firstName} (PUNDERO)
+                </Typography>
                 <IconButton color="inherit" onClick={() => setNotificationsOpen(!notificationsOpen)}>
                     <Badge badgeContent={unseenCount} color="secondary">
                         <NotificationsIcon />
@@ -82,7 +113,12 @@ const CoordinatorNavbar = () => {
             >
                 {drawerContent}
             </Drawer>
-            <NotificationPopup open={notificationsOpen} onClose={() => setNotificationsOpen(false)} /> {/* Add NotificationPopup */}
+            <NotificationPopup 
+                open={notificationsOpen} 
+                onClose={() => setNotificationsOpen(false)} 
+                onViewNotification={handleViewNotification}
+                onMarkAsSeen={handleMarkAsSeen}
+            />
         </AppBar>
     );
 };

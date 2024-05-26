@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { TextField, Button, Grid, Typography, Paper } from '@mui/material';
 import Box from '@mui/material/Box';
 import PunderoLogoBlue from '../images/logo/PunderoLogoBlue.png';
-import PunderoLogoWhite from '../images/logo/PunderoLogoWhite.png';
 
 const LoginPage = () => {
     const [email, setEmail] = useState('');
@@ -19,20 +18,27 @@ const LoginPage = () => {
         setPasswordError('');
 
         try {
-            console.log('Submitting login request:', { email, password });
             const response = await axios.post('http://localhost:8515/api/Authentication/login', { email, password });
-            console.log('Full response from server:', response);
-            console.log('Response data from server:', response.data);
 
-            const { token, type } = response.data;
+            const { token, type, firstName, lastName, storeName } = response.data;
 
             if (token && type !== undefined) {
+                // Clear previous local storage data
+                localStorage.clear();
+
+                // Store new data in local storage
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', type);
+                localStorage.setItem('firstName', firstName);
+                localStorage.setItem('lastName', lastName);
 
-                console.log('Stored Token:', localStorage.getItem('token'));
-                console.log('Stored Role:', localStorage.getItem('role'));
+                if (type === 3) {
+                    localStorage.setItem('storeName', storeName);
+                } else {
+                    localStorage.setItem('storeName', 'PUNDERO');
+                }
 
+                // Navigate based on user role
                 if (type === 1) {
                     navigate('/coordinator');
                 } else if (type === 3) {
@@ -42,33 +48,19 @@ const LoginPage = () => {
                 console.error('Token or Type is undefined:', { token, type });
             }
         } catch (error) {
+            // Handle login errors here
             if (error.response && error.response.data) {
-                const data = error.response.data;
-                if (data.errors) {
-                    if (data.errors.Email) {
-                        setEmailError(data.errors.Email[0]);
-                    }
-                    if (data.errors.Password) {
-                        setPasswordError(data.errors.Password[0]);
-                    }
-                } else if (data.message) {
-                    if (data.message.includes("email")) {
-                        setEmailError(data.message);
-                    } else if (data.message.includes("password")) {
-                        setPasswordError(data.message);
-                    } else {
-                        setEmailError('An error occurred. Please try again.');
-                        setPasswordError('An error occurred. Please try again.');
-                    }
+                const { message } = error.response.data;
+                if (message.toLowerCase().includes('email')) {
+                    setEmailError(message);
+                } else if (message.toLowerCase().includes('password')) {
+                    setPasswordError(message);
                 } else {
-                    setEmailError('An error occurred. Please try again.');
-                    setPasswordError('An error occurred. Please try again.');
+                    console.error('Login error:', message);
                 }
             } else {
-                setEmailError('An error occurred. Please try again.');
-                setPasswordError('An error occurred. Please try again.');
+                console.error('Login error:', error);
             }
-            console.error('Login failed:', error);
         }
     };
 
