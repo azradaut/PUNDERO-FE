@@ -27,6 +27,8 @@ import DeliveredInvoices from './pages/Client/DeliveredInvoices';
 import ClientMap from './pages/Client/ClientMap';
 import Clients from './pages/Coordinator/Clients';
 import Drivers from './pages/Coordinator/Drivers';
+import AssignMobile from './pages/Coordinator/AssignMobile';
+import AssignVehicle from './pages/Coordinator/AssignVehicle';
 
 const CoordinatorLayout = () => {
   return (
@@ -72,6 +74,8 @@ function App() {
             <Route path="coordinators" element={<Coordinators />} />
             <Route path="clients" element={<Clients />} />
             <Route path="drivers" element={<Drivers />} />
+            <Route path="assignmobile" element={<AssignMobile />} />
+            <Route path="assignvehicle" element={<AssignVehicle />} />
           </Route>
           <Route
             path="/client"

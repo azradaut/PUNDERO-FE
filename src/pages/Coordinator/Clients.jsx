@@ -18,7 +18,7 @@ function Clients() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:8515/api/Client/GetClients');
+      const response = await fetch('http://localhost:8515/api/Client');
       const data = await response.json();
       setClients(data);
       setFilteredClients(data);

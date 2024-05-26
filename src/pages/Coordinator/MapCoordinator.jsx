@@ -142,9 +142,9 @@ const MapCoordinator = () => {
         fetchData();
         const interval = setInterval(() => {
             fetchData();
-        }, 5000); // Fetch data every 10 seconds
+        }, 5000); 
 
-        return () => clearInterval(interval); // Cleanup interval on component unmount
+        return () => clearInterval(interval);
     }, []);
 
     const handleLoad = (map) => {
@@ -157,7 +157,7 @@ const MapCoordinator = () => {
             <Map
                 defaultZoom={14}
                 defaultCenter={{ lat: 43.856430, lng: 18.413029 }}
-                mapId='YOUR_MAP_ID' // Optional, use if you have map styling
+                mapId='YOUR_MAP_ID' //NEMAMO JOS CUSTOM MAPU
                 onLoad={handleLoad}
                 style={{ width: '100%', height: '100vh' }}
             >
