@@ -10,25 +10,27 @@ const DeliveredInvoices = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const { setNotifications } = useNotification();
 
+    const storeName = localStorage.getItem('storeName'); // Assuming the store name is stored locally
+
     useEffect(() => {
         fetchInvoices();
     }, []);
 
     const fetchInvoices = async () => {
-        const response = await axios.get('http://localhost:8515/api/Inv/delivered');
-        const invoices = response.data;
-
-        setInvoices(invoices);
+        try {
+            const response = await axios.get(`http://localhost:8515/api/Invoice/GetDeliveredInvoicesForStore/store/${localStorage.storeName}`);
+            const invoices = response.data;
+            setInvoices(invoices);
+        } catch (error) {
+            console.error('Error fetching invoices:', error);
+        }
     };
 
     const handleAccept = async (invoice) => {
         try {
-            await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/complete`);
-            
-            setInvoices((prevInvoices) =>
-                prevInvoices.filter((inv) => inv.idInvoice !== invoice.idInvoice)
-            );
-            setNotifications((prev) => [...prev, { message: 'Invoice accepted', seen: false }]);
+            await axios.put(`http://localhost:8515/api/Invoice/AcceptInvoice/${invoice.idInvoice}/complete`);
+            setInvoices(prevInvoices => prevInvoices.filter(inv => inv.idInvoice !== invoice.idInvoice));
+            setNotifications(prev => [...prev, { message: 'Invoice accepted', seen: false }]);
         } catch (error) {
             console.error('Error accepting invoice:', error);
         }
@@ -36,7 +38,7 @@ const DeliveredInvoices = () => {
 
     const handleReject = async (invoice) => {
         try {
-            await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/fail`);
+            await axios.put(`http://localhost:8515/api/Invoice/RejectInvoice/${invoice.idInvoice}/fail`);
             setInvoices(prev => prev.filter(inv => inv.idInvoice !== invoice.idInvoice));
             setNotifications(prev => [...prev, { message: 'Invoice rejected', seen: false }]);
         } catch (error) {
@@ -45,14 +47,17 @@ const DeliveredInvoices = () => {
     };
 
     const checkAvailability = async (invoice) => {
-        const response = await axios.post('http://localhost:8515/api/Product/CheckAvailability', invoice.invoiceProducts.map(product => ({
-            productId: product.idProduct,
-            quantity: product.orderQuantity
-        })));
-
-        setAvailabilityDetails(response.data.products);
-        setSelectedInvoice(invoice);
-        setIsDialogOpen(true);
+        try {
+            const response = await axios.post('http://localhost:8515/api/Product/CheckAvailability', invoice.invoiceProducts.map(product => ({
+                productId: product.idProduct,
+                quantity: product.orderQuantity
+            })));
+            setAvailabilityDetails(response.data.products);
+            setSelectedInvoice(invoice);
+            setIsDialogOpen(true);
+        } catch (error) {
+            console.error('Error checking availability:', error);
+        }
     };
 
     const handleDialogClose = () => {
@@ -79,7 +84,7 @@ const DeliveredInvoices = () => {
                             <TableRow key={invoice.idInvoice}>
                                 <TableCell>{invoice.idInvoice}</TableCell>
                                 <TableCell>{new Date(invoice.issueDate).toLocaleString()}</TableCell>
-                                <TableCell>{invoice.idStoreNavigation?.name || "N/A"}</TableCell>
+                                <TableCell>{invoice.storeName || "N/A"}</TableCell>
                                 <TableCell>{`${invoice.idDriverNavigation?.firstName} ${invoice.idDriverNavigation?.lastName}`}</TableCell>
                                 <TableCell>
                                     <Button onClick={() => checkAvailability(invoice)}>Check</Button>
