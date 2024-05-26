@@ -1,17 +1,29 @@
-// ItemTable.jsx
-
 import React, { useState } from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, TablePagination, Button, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import {
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Paper,
+  TablePagination,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+} from '@mui/material';
 import ViewItemPopup from './ViewItemPopup';
 import EditItem from './EditItem';
 
-function ItemTable({ items, headers, onEdit, onDelete, fields }) {
+function ItemTable({ items, headers, onDelete, onEdit, fields, customActions }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewItem, setViewItem] = useState(null);
-  const [editItem, setEditItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [editItem, setEditItem] = useState(null);
 
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
@@ -27,6 +39,7 @@ function ItemTable({ items, headers, onEdit, onDelete, fields }) {
   };
 
   const handleEditItemClick = (item) => {
+    console.log("Edit item clicked: ", item);
     setEditItem(item);
   };
 
@@ -46,9 +59,13 @@ function ItemTable({ items, headers, onEdit, onDelete, fields }) {
     setConfirmDeleteOpen(false);
   };
 
-  const handleEditSave = (editedItem) => {
-    onEdit(editedItem); // Pass the edited item to the parent component
-    setEditItem(null); // Close the edit popup
+  const handleSaveEditItem = async (updatedItem) => {
+    await onEdit(updatedItem);
+    setEditItem(null);
+  };
+
+  const getNestedValue = (item, path) => {
+    return path.split('.').reduce((obj, key) => (obj && obj[key] !== 'undefined' ? obj[key] : ''), item);
   };
 
   return (
@@ -68,14 +85,22 @@ function ItemTable({ items, headers, onEdit, onDelete, fields }) {
               ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               : items
             ).map((item) => (
-              <TableRow key={item.id}>
+              <TableRow key={item.idVehicle}>
                 {headers.map((header) => (
-                  <TableCell key={`${item.id}-${header}`}>{item[header]}</TableCell>
+                  <TableCell key={`${item.idVehicle}-${header}`}>
+                    {getNestedValue(item, header)}
+                  </TableCell>
                 ))}
                 <TableCell>
-                  <Button onClick={() => handleViewItemClick(item)}>View</Button>
-                  <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
-                  <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
+                  {customActions ? (
+                    customActions(item)
+                  ) : (
+                    <>
+                      <Button onClick={() => handleViewItemClick(item)}>View</Button>
+                      <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
+                      <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
+                    </>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
@@ -93,12 +118,12 @@ function ItemTable({ items, headers, onEdit, onDelete, fields }) {
       />
       <ViewItemPopup item={viewItem} onClose={() => setViewItem(null)} />
       {editItem && (
-        <Dialog open={!!editItem} onClose={() => setEditItem(null)}>
-          <DialogTitle>Edit Item</DialogTitle>
-          <DialogContent>
-            <EditItem item={editItem} fields={fields} onSave={handleEditSave} onCancel={() => setEditItem(null)} />
-          </DialogContent>
-        </Dialog>
+        <EditItem
+          item={editItem}
+          onSave={handleSaveEditItem}
+          onClose={() => setEditItem(null)}
+          fields={fields}
+        />
       )}
       <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete}>
         <DialogTitle>Delete Item</DialogTitle>

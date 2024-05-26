@@ -1,54 +1,101 @@
+// src/App.js
+import React, { useState } from 'react';
 import {
-  createBrowserRouter,
-  RouterProvider,
+  BrowserRouter as Router,
   Route,
-  Outlet,
+  Routes,
+  Outlet
 } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
-import Accounts from './pages/Accounts';
-import Navbar from './components/Navbar';
-import Home from "./pages/Home";
-import Vehicles from "./pages/Vehicles";
-import Products from "./pages/Products";
+import Accounts from './pages/Coordinator/Accounts';
+import Vehicles from "./pages/Coordinator/Vehicles";
+import MapCoordinator from "./pages/Coordinator/MapCoordinator";
+import CoordinatorDashboard from './pages/Coordinator/CoordinatorDashboard';
+import ClientDashboard from './pages/Client/ClientDashboard';
+import Products from './pages/Client/Products'; 
+import ReviewOrder from './pages/Client/ReviewOrder'; 
+import Notifications from './pages/Notifications'; 
+import PendingInvoices from './pages/Coordinator/PendingInvoices'; 
+import Invoices from './pages/Coordinator/Invoices'; 
+import ProtectedRoute from './components/ProtectedRoute';
+import CoordinatorNavbar from './components/CoordinatorNavbar';
+import ClientNavbar from './components/ClientNavbar';
+import { NotificationProvider } from './contexts/NotificationContext'; 
+import Coordinators from './pages/Coordinator/Coordinators';
+import OrderConfirmation from './pages/Client/OrderConfirmation';
+import DeliveredInvoices from './pages/Client/DeliveredInvoices';
+import ClientMap from './pages/Client/ClientMap';
+import Clients from './pages/Coordinator/Clients';
+import Drivers from './pages/Coordinator/Drivers';
+import AssignMobile from './pages/Coordinator/AssignMobile';
+import AssignVehicle from './pages/Coordinator/AssignVehicle';
 
-
-const Layout = () => {
-  return(
+const CoordinatorLayout = () => {
+  return (
     <>
-      <Navbar />
+      <CoordinatorNavbar />
       <Outlet />
     </>
   );
 };
 
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Layout />,
-    children: [
-      {
-        path:"/",
-        element: <Home />
-      },
-      {
-        path:"/accounts",
-        element: <Accounts />
-      },
-      { path: "/vehicles", element: <Vehicles /> },
-      { path: "/products", element: <Products /> },
-      { path: "/loginpage", element: <LoginPage /> }
-
-    ]
-  }
-])
+const ClientLayout = () => {
+  return (
+    <>
+      <ClientNavbar />
+      <Outlet />
+    </>
+  );
+};
 
 function App() {
+  const [cart, setCart] = useState([]); // State for managing the cart
+
   return (
-    <div className="app">
-      <div className="container">
-        <RouterProvider router={router} />
-      </div>
-    </div>
+    <NotificationProvider> {/* Wrap the entire app with NotificationProvider */}
+      <Router>
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route
+            path="/coordinator"
+            element={
+              <ProtectedRoute role={1}>
+                <CoordinatorLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<CoordinatorDashboard />} />
+            <Route path="accounts" element={<Accounts />} />
+            <Route path="vehicles" element={<Vehicles />} />
+            <Route path="map" element={<MapCoordinator />} />
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="pending-invoices" element={<PendingInvoices />} />
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="coordinators" element={<Coordinators />} />
+            <Route path="clients" element={<Clients />} />
+            <Route path="drivers" element={<Drivers />} />
+            <Route path="assignmobile" element={<AssignMobile />} />
+            <Route path="assignvehicle" element={<AssignVehicle />} />
+          </Route>
+          <Route
+            path="/client"
+            element={
+              <ProtectedRoute role={3}>
+                <ClientLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<ClientDashboard />} />
+            <Route path="products" element={<Products cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
+            <Route path="review-order" element={<ReviewOrder cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
+            <Route path="notifications" element={<Notifications />} />
+            <Route path="delivered-invoices" element={<DeliveredInvoices />} />
+            <Route path="client-map" element={<ClientMap />} />
+            <Route path="order-confirmation" element={<OrderConfirmation cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
+          </Route>
+        </Routes>
+      </Router>
+    </NotificationProvider>
   );
 }
 

@@ -12,7 +12,12 @@ function Accounts() {
       setError(null);
 
       try {
-        const response = await axios.get('https://localhost:44306/api/Account'); 
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:8515/api/Account/GetAccounts', {
+          headers: {
+            'my-auth-token': token,
+          },
+        });
         setAccounts(response.data);
       } catch (error) {
         setError(error);
@@ -22,7 +27,7 @@ function Accounts() {
     };
 
     fetchData();
-  }, []); 
+  }, []);
 
   return (
     <div>
