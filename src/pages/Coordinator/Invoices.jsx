@@ -66,7 +66,11 @@ function Invoices() {
         <MenuItem value="">All</MenuItem>
         <MenuItem value="Pending">Pending</MenuItem>
         <MenuItem value="Approved">Approved</MenuItem>
-        <MenuItem value="Denied">Denied</MenuItem>
+        <MenuItem value="Rejected">Rejected</MenuItem>
+        <MenuItem value="In Transit">In Transit</MenuItem>
+        <MenuItem value="Delivered">Delivered</MenuItem>
+        <MenuItem value="Completed">Completed</MenuItem>
+        <MenuItem value="Failed">Failed</MenuItem>
       </Select>
       <TableContainer component={Paper}>
         <Table>

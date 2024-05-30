@@ -44,6 +44,9 @@ const ClientNavbar = () => {
                 <ListItem button component={Link} to="/client/client-invoices">
                     <ListItemText primary="Invoices" />
                 </ListItem>
+                <ListItem button component={Link} to="/client/client-map">
+                    <ListItemText primary="Map" />
+                </ListItem>
 
                 <ListItem button onClick={handleLogout}>
                     <ListItemText primary="Logout" />
