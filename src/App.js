@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState } from 'react';
 import {
   BrowserRouter as Router,
@@ -20,6 +19,7 @@ import Invoices from './pages/Coordinator/Invoices';
 import ProtectedRoute from './components/ProtectedRoute';
 import CoordinatorNavbar from './components/CoordinatorNavbar';
 import ClientNavbar from './components/ClientNavbar';
+import MainContentLayout from './components/MainContentLayout'; // Import the new layout component
 import { NotificationProvider } from './contexts/NotificationContext'; 
 import Coordinators from './pages/Coordinator/Coordinators';
 import OrderConfirmation from './pages/Client/OrderConfirmation';
@@ -29,12 +29,15 @@ import Clients from './pages/Coordinator/Clients';
 import Drivers from './pages/Coordinator/Drivers';
 import AssignMobile from './pages/Coordinator/AssignMobile';
 import AssignVehicle from './pages/Coordinator/AssignVehicle';
+import ClientInvoices from './pages/Client/ClientInvoices';
 
 const CoordinatorLayout = () => {
   return (
     <>
       <CoordinatorNavbar />
-      <Outlet />
+      <MainContentLayout>
+        <Outlet />
+      </MainContentLayout>
     </>
   );
 };
@@ -43,7 +46,9 @@ const ClientLayout = () => {
   return (
     <>
       <ClientNavbar />
-      <Outlet />
+      <MainContentLayout>
+        <Outlet />
+      </MainContentLayout>
     </>
   );
 };
@@ -89,6 +94,7 @@ function App() {
             <Route path="products" element={<Products cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
             <Route path="review-order" element={<ReviewOrder cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
             <Route path="notifications" element={<Notifications />} />
+            <Route path="client-invoices" element={<ClientInvoices />} />
             <Route path="delivered-invoices" element={<DeliveredInvoices />} />
             <Route path="client-map" element={<ClientMap />} />
             <Route path="order-confirmation" element={<OrderConfirmation cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
