@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select } from '@mui/material';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem } from '@mui/material';
 import FilterBar from '../../components/FilterBar';
 import axios from 'axios';
 
-function Invoices() {
+function ClientInvoices() {
   const [invoices, setInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const storeName = localStorage.getItem('storeName'); 
 
   useEffect(() => {
     fetchData();
@@ -16,7 +17,7 @@ function Invoices() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8515/api/Inv');
+      const response = await axios.get(`http://localhost:8515/api/Inv/store/${storeName}`);
       setInvoices(response.data);
       setFilteredInvoices(response.data);
     } catch (error) {
@@ -65,11 +66,7 @@ function Invoices() {
         <MenuItem value="">All</MenuItem>
         <MenuItem value="Pending">Pending</MenuItem>
         <MenuItem value="Approved">Approved</MenuItem>
-        <MenuItem value="Rejected">Rejected</MenuItem>
-        <MenuItem value="In Transit">In Transit</MenuItem>
-        <MenuItem value="Delivered">Delivered</MenuItem>
-        <MenuItem value="Completed">Completed</MenuItem>
-        <MenuItem value="Failed">Failed</MenuItem>
+        <MenuItem value="Denied">Denied</MenuItem>
       </Select>
       <TableContainer component={Paper}>
         <Table>
@@ -105,7 +102,6 @@ function Invoices() {
               <p><strong>Invoice ID:</strong> {selectedInvoice.idInvoice}</p>
               <p><strong>Issue Date:</strong> {new Date(selectedInvoice.issueDate).toLocaleDateString()}</p>
               <p><strong>Store:</strong> {selectedInvoice.storeName}</p>
-              <p><strong>Warehouse:</strong> {selectedInvoice.warehouseName}</p>
               <p><strong>Driver:</strong> {selectedInvoice.driverName}</p>
               <p><strong>Status:</strong> {selectedInvoice.statusName}</p>
               <h4>Products:</h4>
@@ -141,4 +137,4 @@ function Invoices() {
   );
 }
 
-export default Invoices;
+export default ClientInvoices;

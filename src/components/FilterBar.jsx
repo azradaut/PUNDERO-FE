@@ -15,6 +15,7 @@ function FilterBar({ onSearchChange }) {
       <TextField
         fullWidth
         label="Search"
+      
         value={searchText}
         onChange={handleSearchInputChange}
       />

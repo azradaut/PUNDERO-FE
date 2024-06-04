@@ -18,7 +18,7 @@ function Drivers() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:8515/api/Driver/GetDrivers');
+      const response = await fetch('http://localhost:8515/api/Driver/GetDriversCoordinator');
       const data = await response.json();
       setDrivers(data);
       setFilteredDrivers(data);
@@ -39,6 +39,7 @@ function Drivers() {
 
   const handleAddDriver = async (formData) => {
     try {
+      console.log("Sending Form Data: ", formData);
       const response = await fetch('http://localhost:8515/api/Driver/AddDriver', {
         method: 'POST',
         headers: {
@@ -58,7 +59,7 @@ function Drivers() {
     }
   };
 
-  const handleViewDriver = (driver) => {
+  const handleViewDriver= (driver) => {
     setViewAccount(driver);
   };
 
@@ -70,7 +71,9 @@ function Drivers() {
       {filteredDrivers.length > 0 ? (
         <ItemTable
           items={filteredDrivers}
-          headers={['IdDriver', 'FirstName', 'LastName', 'Email', 'Type', 'LicenseCategory']}
+          headers={Object.keys(drivers[0] || {}).map(header =>
+            header === "assignedDriver" ? "assignedDriver.driverName" :
+            header === "assignmentType" ? "assignmentType" : header)}
           customActions={(item) => (
             <Button onClick={() => handleViewDriver(item)}>View</Button>
           )}

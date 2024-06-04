@@ -20,13 +20,13 @@ const LoginPage = () => {
         try {
             const response = await axios.post('http://localhost:8515/api/Authentication/login', { email, password });
 
-            const { token, type, firstName, lastName, storeName } = response.data;
+            const { token, type, firstName, lastName, storeName, clientId } = response.data;
 
             if (token && type !== undefined) {
-                // Clear previous local storage data
+                
                 localStorage.clear();
 
-                // Store new data in local storage
+                
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', type);
                 localStorage.setItem('firstName', firstName);
@@ -34,21 +34,22 @@ const LoginPage = () => {
 
                 if (type === 3) {
                     localStorage.setItem('storeName', storeName);
+                    localStorage.setItem('clientId', clientId);
                 } else {
                     localStorage.setItem('storeName', 'PUNDERO');
                 }
 
-                // Navigate based on user role
+                
                 if (type === 1) {
-                    navigate('/coordinator');
+                    navigate('/coordinator/dashboard');
                 } else if (type === 3) {
-                    navigate('/client');
+                    navigate('/client/dashboard');
                 }
             } else {
                 console.error('Token or Type is undefined:', { token, type });
             }
         } catch (error) {
-            // Handle login errors here
+           
             if (error.response && error.response.data) {
                 const { message } = error.response.data;
                 if (message.toLowerCase().includes('email')) {

@@ -57,6 +57,7 @@ const PendingInvoices = () => {
       }
   
       try {
+        window.location.reload();
           await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/assign`, {
               warehouseId: invoice.selectedWarehouse,
               driverId: invoice.selectedDriver
@@ -76,6 +77,7 @@ const PendingInvoices = () => {
 
     const handleReject = async (invoice) => {
         try {
+            window.location.reload();
             await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/reject`);
             setInvoices(prev => prev.filter(inv => inv.idInvoice !== invoice.idInvoice));
             setNotifications(prev => [...prev, { message: 'Invoice rejected', seen: false }]);

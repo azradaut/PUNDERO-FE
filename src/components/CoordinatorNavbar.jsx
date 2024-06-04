@@ -1,9 +1,21 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge, Box } from '@mui/material';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge, Box, Menu, MenuItem, Button, ListItemIcon } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import AccountBoxIcon from '@mui/icons-material/AccountBox';
+import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
+import SupervisorAccountIcon from '@mui/icons-material/SupervisorAccount';
+import PeopleIcon from '@mui/icons-material/People';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import MobileFriendlyIcon from '@mui/icons-material/MobileFriendly';
+import CommuteIcon from '@mui/icons-material/Commute';
+import MapIcon from '@mui/icons-material/Map';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import PendingIcon from '@mui/icons-material/HourglassEmpty';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useNotification } from '../contexts/NotificationContext';
 import NotificationPopup from '../pages/NotificationPopup';
 import axios from 'axios';
@@ -15,6 +27,20 @@ const CoordinatorNavbar = () => {
     const unseenCount = notifications.filter(notification => !notification.seen).length;
     const firstName = localStorage.getItem('firstName');
     const navigate = useNavigate();
+    const location = useLocation();
+
+   
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [assignmentAnchorEl, setAssignmentAnchorEl] = useState(null);
+    const [equipmentAnchorEl, setEquipmentAnchorEl] = useState(null);
+
+    const handleMenuClick = (event, menuSetter) => {
+        menuSetter(event.currentTarget);
+    };
+
+    const handleMenuClose = (menuSetter) => {
+        menuSetter(null);
+    };
 
     const handleMarkAsSeen = async (id) => {
         try {
@@ -46,40 +72,24 @@ const CoordinatorNavbar = () => {
             </Toolbar>
             <Divider />
             <List>
-                <ListItem button component={Link} to="/coordinator/dashboard">
+                <ListItem button component={Link} to="/coordinator/dashboard" selected={location.pathname === '/coordinator/dashboard'}>
+                    <ListItemIcon><DashboardIcon /></ListItemIcon>
                     <ListItemText primary="Dashboard" />
                 </ListItem>
-                <ListItem button component={Link} to="/coordinator/accounts">
-                    <ListItemText primary="Accounts" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/vehicles">
-                    <ListItemText primary="Vehicles" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/coordinators">
-                    <ListItemText primary="Coordinators" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/clients">
-                    <ListItemText primary="Clients" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/drivers">
-                    <ListItemText primary="Drivers" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/assignmobile">
-                    <ListItemText primary="AssignMobile" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/assignvehicle">
-                    <ListItemText primary="Assign Vehicle" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/map">
-                    <ListItemText primary="Map" />
-                </ListItem>
-                <ListItem button component={Link} to="/coordinator/invoices">
+                <ListItem button component={Link} to="/coordinator/invoices" selected={location.pathname === '/coordinator/invoices'}>
+                    <ListItemIcon><ReceiptIcon /></ListItemIcon>
                     <ListItemText primary="Invoices" />
                 </ListItem>
-                <ListItem button component={Link} to="/coordinator/pending-invoices">
+                <ListItem button component={Link} to="/coordinator/pending-invoices" selected={location.pathname === '/coordinator/pending-invoices'}>
+                    <ListItemIcon><PendingIcon /></ListItemIcon>
                     <ListItemText primary="Pending Invoices" />
                 </ListItem>
-                <ListItem button component={Link} to="/">
+                <ListItem button component={Link} to="/coordinator/map" selected={location.pathname === '/coordinator/map'}>
+                    <ListItemIcon><MapIcon /></ListItemIcon>
+                    <ListItemText primary="Map" />
+                </ListItem>
+                <ListItem button component={Link} to="/" selected={location.pathname === '/'}>
+                    <ListItemIcon><LogoutIcon /></ListItemIcon>
                     <ListItemText primary="Logout" />
                 </ListItem>
             </List>
@@ -98,10 +108,55 @@ const CoordinatorNavbar = () => {
                 >
                     <MenuIcon />
                 </IconButton>
-                <Typography variant="h6" noWrap component="div">
-                    PUNDERO
-                </Typography>
-                <Box sx={{ flexGrow: 1 }} />
+                <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
+                    {/* Dropdown Menus */}
+                    <Button
+                        color="inherit"
+                        onClick={(e) => handleMenuClick(e, setAnchorEl)}
+                    >
+                        Accounts
+                    </Button>
+                    <Menu
+                        anchorEl={anchorEl}
+                        open={Boolean(anchorEl)}
+                        onClose={() => handleMenuClose(setAnchorEl)}
+                    >
+                        <MenuItem component={Link} to="/coordinator/accounts" selected={location.pathname === '/coordinator/accounts'} onClick={() => handleMenuClose(setAnchorEl)}>Accounts</MenuItem>
+                        <MenuItem component={Link} to="/coordinator/coordinators" selected={location.pathname === '/coordinator/coordinators'} onClick={() => handleMenuClose(setAnchorEl)}>Coordinators</MenuItem>
+                        <MenuItem component={Link} to="/coordinator/clients" selected={location.pathname === '/coordinator/clients'} onClick={() => handleMenuClose(setAnchorEl)}>Clients</MenuItem>
+                        <MenuItem component={Link} to="/coordinator/drivers" selected={location.pathname === '/coordinator/drivers'} onClick={() => handleMenuClose(setAnchorEl)}>Drivers</MenuItem>
+                    </Menu>
+
+                    <Button
+                        color="inherit"
+                        onClick={(e) => handleMenuClick(e, setAssignmentAnchorEl)}
+                    >
+                        Assignments
+                    </Button>
+                    <Menu
+                        anchorEl={assignmentAnchorEl}
+                        open={Boolean(assignmentAnchorEl)}
+                        onClose={() => handleMenuClose(setAssignmentAnchorEl)}
+                    >
+                        <MenuItem component={Link} to="/coordinator/assignmobile" selected={location.pathname === '/coordinator/assignmobile'} onClick={() => handleMenuClose(setAssignmentAnchorEl)}>Assign Mobile</MenuItem>
+                        <MenuItem component={Link} to="/coordinator/assignvehicle" selected={location.pathname === '/coordinator/assignvehicle'} onClick={() => handleMenuClose(setAssignmentAnchorEl)}>Assign Vehicle</MenuItem>
+                    </Menu>
+
+                    <Button
+                        color="inherit"
+                        onClick={(e) => handleMenuClick(e, setEquipmentAnchorEl)}
+                    >
+                        Equipment
+                    </Button>
+                    <Menu
+                        anchorEl={equipmentAnchorEl}
+                        open={Boolean(equipmentAnchorEl)}
+                        onClose={() => handleMenuClose(setEquipmentAnchorEl)}
+                    >
+                        <MenuItem component={Link} to="/coordinator/vehicles" selected={location.pathname === '/coordinator/vehicles'} onClick={() => handleMenuClose(setEquipmentAnchorEl)}>Vehicles</MenuItem>
+                        <MenuItem component={Link} to="/coordinator/mobiles" selected={location.pathname === '/coordinator/mobiles'} onClick={() => handleMenuClose(setEquipmentAnchorEl)}>Mobiles</MenuItem>
+                    </Menu>
+                </Box>
                 <Typography variant="h6" component="div" sx={{ flexGrow: 0 }}>
                     {firstName} (PUNDERO)
                 </Typography>

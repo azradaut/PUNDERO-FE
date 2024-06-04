@@ -5,18 +5,16 @@ import FilterBar from '../../components/FilterBar';
 import AddItem from '../../components/AddItem';
 import Alerts from '../../components/Alerts'; 
 
-const vehicleFields = [
-  { name: 'registration', label: 'Registration', required: true, pattern: '^[A-Z]\\d{2}-[A-Z]-\\d{3}$', errorMessage: "Registration format must be 'A11-B-222'" },
-  { name: 'issueDate', label: 'Issue Date', required: true, type: 'date', placeholder: 'yyyy-MM-dd' },
-  { name: 'expiryDate', label: 'Expiry Date', required: true, type: 'date', placeholder: 'yyyy-MM-dd' },
+const mobileFields = [
+  { name: 'phoneNumber', label: 'Phone Number', required: true },
   { name: 'brand', label: 'Brand', required: true, maxLength: 20 },
   { name: 'model', label: 'Model', required: true, maxLength: 20 },
-  { name: 'color', label: 'Color', required: true, maxLength: 20 }
+  { name: 'imei', label: 'IMEI', required: true, pattern: '^[0-9]{15}$', errorMessage: "IMEI must be 15 digits" }
 ];
 
-function Vehicles() {
-  const [vehicles, setVehicles] = useState([]);
-  const [filteredVehicles, setFilteredVehicles] = useState([]);
+function Mobiles() {
+  const [mobiles, setMobiles] = useState([]);
+  const [filteredMobiles, setFilteredMobiles] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [alertOpen, setAlertOpen] = useState(false);
@@ -29,28 +27,29 @@ function Vehicles() {
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:8515/api/Vehicle');
+      const response = await fetch('http://localhost:8515/api/Mobile');
       const data = await response.json();
-      setVehicles(data);
-      setFilteredVehicles(data);
+      setMobiles(data);
+      setFilteredMobiles(data);
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
+      console.error('Error fetching mobiles:', error);
     }
   };
 
   const handleSearchChange = (newSearchText) => {
     setSearchText(newSearchText);
-    const filteredResult = vehicles.filter((vehicle) => {
-      return Object.values(vehicle).some((value) =>
+    const filteredResult = mobiles.filter((mobile) => {
+      return Object.values(mobile).some((value) =>
         typeof value === 'string' && value.toLowerCase().includes(newSearchText.toLowerCase())
       );
     });
-    setFilteredVehicles(filteredResult);
+    setFilteredMobiles(filteredResult);
   };
 
   const handleAddItem = async (formData) => {
     try {
-      const response = await fetch('http://localhost:8515/api/Vehicle', {
+      console.log('Form Data:', formData); 
+      const response = await fetch('http://localhost:8515/api/Mobile', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -58,27 +57,27 @@ function Vehicles() {
         body: JSON.stringify(formData),
       });
       if (!response.ok) {
-        throw new Error('Failed to add vehicle');
+        const errorData = await response.json();
+        console.error('Error adding mobile:', errorData.errors); 
+        throw new Error('Failed to add mobile');
       }
-      setAlertMessage('Vehicle added successfully!');
+      setAlertMessage('Mobile added successfully!');
       setAlertSeverity('success');
       fetchData();
     } catch (error) {
-      setAlertMessage('Error adding vehicle.');
+      setAlertMessage('Error adding mobile.');
       setAlertSeverity('error');
-      if (error.response && error.response.data && error.response.data.errors) {
-        throw error.response.data.errors;
-      } else {
-        console.error('Error adding vehicle:', error);
-      }
+      console.error('Error adding mobile:', error);
     } finally {
       setAlertOpen(true);
     }
   };
+  
+  
 
   const handleEditItem = async (formData) => {
     try {
-      const response = await fetch(`http://localhost:8515/api/Vehicle/${formData.idVehicle}`, {
+      const response = await fetch(`http://localhost:8515/api/Mobile/${formData.idMobile}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -86,15 +85,15 @@ function Vehicles() {
         body: JSON.stringify(formData),
       });
       if (!response.ok) {
-        throw new Error('Failed to update vehicle');
+        throw new Error('Failed to update mobile');
       }
-      setAlertMessage('Vehicle updated successfully!');
+      setAlertMessage('Mobile updated successfully!');
       setAlertSeverity('success');
       fetchData();
     } catch (error) {
-      setAlertMessage('Error updating vehicle.');
+      setAlertMessage('Error updating mobile.');
       setAlertSeverity('error');
-      console.error('Error updating vehicle:', error);
+      console.error('Error updating mobile:', error);
     } finally {
       setAlertOpen(true);
     }
@@ -102,19 +101,19 @@ function Vehicles() {
 
   const handleDeleteItemClick = async (item) => {
     try {
-      const response = await fetch(`http://localhost:8515/api/Vehicle/DeleteVehicle/${item.idVehicle}`, {
+      const response = await fetch(`http://localhost:8515/api/Mobile/${item.idMobile}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
-        throw new Error('Failed to delete vehicle');
+        throw new Error('Failed to delete mobile');
       }
-      setAlertMessage('Vehicle deleted successfully!');
+      setAlertMessage('Mobile deleted successfully!');
       setAlertSeverity('success');
       fetchData();
     } catch (error) {
-      setAlertMessage('Error deleting vehicle.');
+      setAlertMessage('Error deleting mobile.');
       setAlertSeverity('error');
-      console.error('Error deleting vehicle:', error);
+      console.error('Error deleting mobile:', error);
     } finally {
       setAlertOpen(true);
     }
@@ -124,32 +123,32 @@ function Vehicles() {
     setAlertOpen(false);
   };
 
-  const categoryAttributes = vehicles.length > 0 ? Object.keys(vehicles[0]).filter(attr => attr !== 'id') : [];
+  const categoryAttributes = mobiles.length > 0 ? Object.keys(mobiles[0]).filter(attr => attr !== 'id') : [];
 
   return (
     <div>
-      <h2>Vehicles</h2>
+      <h2>Mobiles</h2>
       <FilterBar onSearchChange={handleSearchChange} />
       <Button onClick={() => setShowAddDialog(true)}>Add</Button>
       {showAddDialog && (
-        <AddItem onAdd={handleAddItem} onClose={() => setShowAddDialog(false)} fields={vehicleFields} />
+        <AddItem onAdd={handleAddItem} onClose={() => setShowAddDialog(false)} fields={mobileFields} />
       )}
-      {filteredVehicles.length > 0 ? (
+      {filteredMobiles.length > 0 ? (
         <ItemTable
-          items={filteredVehicles}
-          headers={Object.keys(vehicles[0] || {}).map(header =>
+          items={filteredMobiles}
+          headers={Object.keys(mobiles[0] || {}).map(header =>
             header === "assignedDriver" ? "assignedDriver.driverName" :
             header === "assignmentType" ? "assignmentType" : header)}
           onDelete={handleDeleteItemClick}
           onEdit={handleEditItem}
-          fields={vehicleFields}
+          fields={mobileFields}
         />
       ) : (
-        <p>No vehicles match the current filters.</p>
+        <p>No mobiles match the current filters.</p>
       )}
       <Alerts open={alertOpen} message={alertMessage} severity={alertSeverity} onClose={handleAlertClose} />
     </div>
   );
 }
 
-export default Vehicles;
+export default Mobiles;

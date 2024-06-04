@@ -15,8 +15,8 @@ function ReviewOrder({ cart, setCart }) {
   };
 
   const handleSubmit = async () => {
-    const clientId = 1; // Replace with actual client ID from context or authentication
-    const storeName = localStorage.getItem('storeName'); // Retrieve storeName from localStorage
+    const clientId = localStorage.getItem('clientId');
+    const storeName = localStorage.getItem('storeName'); 
     const products = cart.map((item) => ({ productId: item.idProduct, quantity: item.quantity }));
 
     const request = {

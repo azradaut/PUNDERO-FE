@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from '@mui/material';
+import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField } from '@mui/material';
 import axios from 'axios';
 import AddMobileAssignment from '../../components/AddMobileAssignment';
 import EditMobileAssignment from '../../components/EditMobileAssignment';
@@ -20,7 +20,7 @@ const AssignMobile = () => {
     const fetchData = async () => {
         try {
             const [assignmentsResponse, driversResponse, mobilesResponse, assignmentTypesResponse] = await Promise.all([
-                axios.get('http://localhost:8515/api/MobileDriver/GetAssignments'),
+                axios.get('http://localhost:8515/api/MobileDriver/GetMobileAssignments'),
                 axios.get('http://localhost:8515/api/MobileDriver/GetDriversWithName'),
                 axios.get('http://localhost:8515/api/MobileDriver/GetUnassignedMobiles'),
                 axios.get('http://localhost:8515/api/MobileDriver/GetAssignmentTypes')
@@ -48,7 +48,8 @@ const AssignMobile = () => {
 
     const handleAddAssignment = async (formData) => {
         try {
-            const response = await axios.post('http://localhost:8515/api/MobileDriver/AddAssignment', formData);
+            window.location.reload();
+            const response = await axios.post('http://localhost:8515/api/MobileDriver/AddMobileAssignment', formData);
             if (response.status === 200) {
                 fetchData();
                 setShowAddDialog(false);
@@ -60,8 +61,8 @@ const AssignMobile = () => {
 
     const handleEditAssignment = async (id, formData) => {
         try {
-            const response = await axios.put(`http://localhost:8515/api/MobileDriver/EditAssignment/${id}`, formData);
-            if (response.status === 200) {
+            const response = await axios.put(`http://localhost:8515/api/MobileDriver/EditMobileAssignment/${id}`, formData);
+            if (response.status === 204) { 
                 fetchData();
                 setEditAssignment(null);
             }
@@ -72,8 +73,8 @@ const AssignMobile = () => {
 
     const handleDeleteAssignment = async (id) => {
         try {
-            const response = await axios.delete(`http://localhost:8515/api/MobileDriver/DeleteAssignment/${id}`);
-            if (response.status === 200) {
+            const response = await axios.delete(`http://localhost:8515/api/MobileDriver/DeleteMobileAssignment/${id}`);
+            if (response.status === 204) { 
                 fetchData();
             }
         } catch (error) {
@@ -112,7 +113,7 @@ const AssignMobile = () => {
                                 <TableCell>{assignment.driverName}</TableCell>
                                 <TableCell>{assignment.phoneNumber}</TableCell>
                                 <TableCell>{new Date(assignment.assignmentStartDate).toLocaleDateString()}</TableCell>
-                                <TableCell>{new Date(assignment.assignmentEndDate).toLocaleDateString()}</TableCell>
+                                <TableCell>{assignment.assignmentEndDate ? new Date(assignment.assignmentEndDate).toLocaleDateString() : 'N/A'}</TableCell>
                                 <TableCell>{assignment.assignmentType}</TableCell>
                                 <TableCell>
                                     <Button onClick={() => setEditAssignment(assignment)}>Edit</Button>
