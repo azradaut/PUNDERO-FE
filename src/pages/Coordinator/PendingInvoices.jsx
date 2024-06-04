@@ -46,7 +46,7 @@ const PendingInvoices = () => {
     };
 
     const fetchDrivers = async () => {
-        const response = await axios.get('http://localhost:8515/api/Driver/GetDriversWithName/GetDriversWithName');
+        const response = await axios.get('http://localhost:8515/api/Driver/GetDriversWithName');
         setDrivers(response.data);
     };
 

@@ -1,4 +1,3 @@
-// src/pages/Coordinator/Invoices.jsx
 import React, { useState, useEffect } from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select } from '@mui/material';
 import FilterBar from '../../components/FilterBar';

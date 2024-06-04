@@ -30,6 +30,7 @@ import Drivers from './pages/Coordinator/Drivers';
 import AssignMobile from './pages/Coordinator/AssignMobile';
 import AssignVehicle from './pages/Coordinator/AssignVehicle';
 import ClientInvoices from './pages/Client/ClientInvoices';
+import Mobiles from './pages/Coordinator/Mobiles';
 
 const CoordinatorLayout = () => {
   return (
@@ -72,6 +73,7 @@ function App() {
             <Route path="dashboard" element={<CoordinatorDashboard />} />
             <Route path="accounts" element={<Accounts />} />
             <Route path="vehicles" element={<Vehicles />} />
+            <Route path="mobiles" element={<Mobiles />} />
             <Route path="map" element={<MapCoordinator />} />
             <Route path="invoices" element={<Invoices />} />
             <Route path="pending-invoices" element={<PendingInvoices />} />
@@ -81,6 +83,7 @@ function App() {
             <Route path="drivers" element={<Drivers />} />
             <Route path="assignmobile" element={<AssignMobile />} />
             <Route path="assignvehicle" element={<AssignVehicle />} />
+
           </Route>
           <Route
             path="/client"

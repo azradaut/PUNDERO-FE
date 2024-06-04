@@ -1,9 +1,14 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge, Box } from '@mui/material';
+import { Link, useLocation } from 'react-router-dom';
+import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge, Box, ListItemIcon } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import ReceiptIcon from '@mui/icons-material/Receipt';
+import MapIcon from '@mui/icons-material/Map';
+import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 import { useNotification } from '../contexts/NotificationContext';
 import NotificationPopup from '../pages/NotificationPopup';
 
@@ -14,6 +19,7 @@ const ClientNavbar = () => {
     const unseenCount = notifications.filter(notification => !notification.seen).length;
     const firstName = localStorage.getItem('firstName');
     const storeName = localStorage.getItem('storeName');
+    const location = useLocation();
 
     const handleLogout = () => {
         localStorage.clear();
@@ -32,23 +38,28 @@ const ClientNavbar = () => {
             </Toolbar>
             <Divider />
             <List>
-                <ListItem button component={Link} to="/client/dashboard">
+                <ListItem button component={Link} to="/client/dashboard" selected={location.pathname === '/client/dashboard'}>
+                    <ListItemIcon><DashboardIcon /></ListItemIcon>
                     <ListItemText primary="Dashboard" />
                 </ListItem>
-                <ListItem button component={Link} to="/client/products">
+                <ListItem button component={Link} to="/client/products" selected={location.pathname === '/client/products'}>
+                    <ListItemIcon><ShoppingCartIcon /></ListItemIcon>
                     <ListItemText primary="Products" />
                 </ListItem>
-                <ListItem button component={Link} to="/client/delivered-invoices">
+                <ListItem button component={Link} to="/client/delivered-invoices" selected={location.pathname === '/client/delivered-invoices'}>
+                    <ListItemIcon><ReceiptIcon /></ListItemIcon>
                     <ListItemText primary="Delivered Invoices" />
                 </ListItem>
-                <ListItem button component={Link} to="/client/client-invoices">
+                <ListItem button component={Link} to="/client/client-invoices" selected={location.pathname === '/client/client-invoices'}>
+                    <ListItemIcon><ReceiptIcon /></ListItemIcon>
                     <ListItemText primary="Invoices" />
                 </ListItem>
-                <ListItem button component={Link} to="/client/client-map">
+                <ListItem button component={Link} to="/client/client-map" selected={location.pathname === '/client/client-map'}>
+                    <ListItemIcon><MapIcon /></ListItemIcon>
                     <ListItemText primary="Map" />
                 </ListItem>
-
                 <ListItem button onClick={handleLogout}>
+                    <ListItemIcon><ExitToAppIcon /></ListItemIcon>
                     <ListItemText primary="Logout" />
                 </ListItem>
             </List>

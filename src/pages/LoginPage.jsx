@@ -23,10 +23,10 @@ const LoginPage = () => {
             const { token, type, firstName, lastName, storeName, clientId } = response.data;
 
             if (token && type !== undefined) {
-                // Ocisti
+                
                 localStorage.clear();
 
-                // local storage data
+                
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', type);
                 localStorage.setItem('firstName', firstName);
