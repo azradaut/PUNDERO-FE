@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState} from 'react';
 import {
   BrowserRouter as Router,
   Route,
@@ -56,6 +56,7 @@ const ClientLayout = () => {
 
 function App() {
   const [cart, setCart] = useState([]); // State for managing the cart
+  
 
   return (
     <NotificationProvider> {/* Wrap the entire app with NotificationProvider */}
@@ -103,9 +104,10 @@ function App() {
             <Route path="order-confirmation" element={<OrderConfirmation cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
           </Route>
         </Routes>
-      </Router>
+       </Router>
     </NotificationProvider>
-  );
-}
+          );
+
+};
 
 export default App;

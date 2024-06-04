@@ -1,4 +1,3 @@
-// src/pages/Client/ClientMap.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import {
@@ -10,15 +9,14 @@ import {
 } from '@vis.gl/react-google-maps';
 import { MarkerClusterer } from '@googlemaps/markerclusterer';
 
-const PoiMarkers = ({ pois, map }) => {
+const ClientMarkers = ({ drivers, store, map }) => {
     const [markers, setMarkers] = useState({});
-    const [selectedPoi, setSelectedPoi] = useState(null);
+    const [selectedDriver, setSelectedDriver] = useState(null);
     const infoWindowRef = useRef(null);
     const markersRef = useRef({});
 
     useEffect(() => {
         if (map && !infoWindowRef.current) {
-            console.log('Initializing InfoWindow...');
             infoWindowRef.current = new window.google.maps.InfoWindow();
         }
     }, [map]);
@@ -31,23 +29,23 @@ const PoiMarkers = ({ pois, map }) => {
         }
     }, [markers, map]);
 
-    const setMarkerRef = (marker, poi) => {
-        if (!marker || markersRef.current[poi.key]) return;
+    const setMarkerRef = (marker, driver) => {
+        if (!marker || markersRef.current[driver.key]) return;
 
-        markersRef.current[poi.key] = marker;
+        markersRef.current[driver.key] = marker;
         setMarkers(prev => ({
             ...prev,
-            [poi.key]: marker
+            [driver.key]: marker
         }));
 
         marker.addListener('click', () => {
-            setSelectedPoi(poi);
+            setSelectedDriver(driver);
             if (infoWindowRef.current) {
                 const content = `
                     <div>
-                        <h3>${poi.type === 'store' ? 'Store' : 'Driver'}: ${poi.name || 'Unnamed'}</h3>
-                        <p>Address: ${poi.address || ''}</p>
-                        ${poi.type === 'driver' ? `<p>Phone: ${poi.phone}</p>` : ''}
+                        <img src="http://localhost:8515/images/profile_images/${driver.image}" alt="Profile Image" style="width: 100px; height: 100px; object-fit: cover;"/>
+                        <h3>Driver: ${driver.name}</h3>
+                        <p>Invoices: ${driver.invoices.join(', ')}</p>
                     </div>
                 `;
                 infoWindowRef.current.setContent(content);
@@ -58,29 +56,42 @@ const PoiMarkers = ({ pois, map }) => {
 
     return (
         <>
-            {pois.map(poi => (
+            {store && (
                 <AdvancedMarker
-                    key={poi.key}
-                    position={poi.location}
-                    ref={marker => setMarkerRef(marker, poi)}
+                    key={store.idStore}
+                    position={{ lat: store.location.latitude, lng: store.location.longitude }}
                     clickable={true}
                 >
                     <Pin
-                        background={poi.type === 'store' ? '#0000FF' : '#00FF00'}
-                        glyphColor={'#FFFFFF'}
-                        borderColor={'#000000'}
+                        background='#0000FF'
+                        glyphColor='#FFFFFF'
+                        borderColor='#000000'
+                    />
+                </AdvancedMarker>
+            )}
+            {drivers.map(driver => (
+                <AdvancedMarker
+                    key={driver.key}
+                    position={driver.location}
+                    ref={marker => setMarkerRef(marker, driver)}
+                    clickable={true}
+                >
+                    <Pin
+                        background='#00FF00'
+                        glyphColor='#FFFFFF'
+                        borderColor='#000000'
                     />
                 </AdvancedMarker>
             ))}
-            {selectedPoi && (
+            {selectedDriver && (
                 <InfoWindow
-                    position={selectedPoi.location}
-                    onCloseClick={() => setSelectedPoi(null)}
+                    position={selectedDriver.location}
+                    onCloseClick={() => setSelectedDriver(null)}
                 >
                     <div>
-                        <h3>{selectedPoi.type === 'store' ? 'Store' : 'Driver'}: {selectedPoi.name || 'Unnamed'}</h3>
-                        <p>Address: {selectedPoi.address || ''}</p>
-                        {selectedPoi.type === 'driver' && <p>Phone: {selectedPoi.phone}</p>}
+                        <img src={`http://localhost:8515/images/profile_images/Driver${selectedDriver.image}`} alt="Profile Image" style={{ width: '100px', height: '100px', objectFit: 'cover' }}/>
+                        <h3>Driver: {selectedDriver.name}</h3>
+                        <p>Invoices: {selectedDriver.invoices.join(', ')}</p>
                     </div>
                 </InfoWindow>
             )}
@@ -90,34 +101,54 @@ const PoiMarkers = ({ pois, map }) => {
 
 const ClientMap = () => {
     const apiKey = 'AIzaSyBImLKFT3gd7ZSdjJnnlrp5MFjed6rZcbA';
-    const [locations, setLocations] = useState([]);
+    const [drivers, setDrivers] = useState([]);
+    const [store, setStore] = useState(null);
     const mapRef = useRef(null);
-    const storeName = localStorage.getItem('storeName');
 
     const fetchData = async () => {
         try {
-            const [storeResponse, driversResponse] = await Promise.all([
-                axios.get(`http://localhost:8515/api/ClientMap/store/${storeName}`),
-                axios.get(`http://localhost:8515/api/ClientMap/drivers/${storeName}`)
-            ]);
-
-            const store = storeResponse.data && {
-                key: `store-${storeResponse.data.idStore}`,
-                location: { lat: storeResponse.data.latitude, lng: storeResponse.data.longitude },
-                name: storeResponse.data.name,
-                address: storeResponse.data.address,
-                type: 'store'
+            const storedClientInfo = {
+                storeName: localStorage.getItem('storeName'),
+                token: localStorage.getItem('token'),
+                clientId: localStorage.getItem('clientId'),
+                role: localStorage.getItem('role'),
+                lastName: localStorage.getItem('lastName'),
+                firstName: localStorage.getItem('firstName')
             };
 
-            const drivers = driversResponse.data.map(driver => ({
+            const [driversResponse, storeResponse] = await Promise.all([
+                axios.get(`http://localhost:8515/api/Inv/intransitToClient/${storedClientInfo.storeName}`, {
+                    headers: {
+                        Authorization: `Bearer ${storedClientInfo.token}`
+                    }
+                }),
+                axios.get(`http://localhost:8515/api/Stores/GetStoreByName/getStoreByName/${storedClientInfo.storeName}`, {
+                    headers: {
+                        Authorization: `Bearer ${storedClientInfo.token}`
+                    }
+                })
+            ]);
+
+            const driverData = driversResponse.data.map(driver => ({
                 key: `driver-${driver.driverId}`,
                 location: { lat: driver.lkLatitude, lng: driver.lkLongitude },
                 name: `${driver.firstName} ${driver.lastName}`,
-                phone: driver.mobilePhoneNumber,
-                type: 'driver'
+                invoices: driver.invoices,
+                image: `${driver.firstName}${driver.lastName}.jpeg` 
             }));
 
-            setLocations([store, ...drivers]);
+            const storeData = {
+                idStore: storeResponse.data.idStore,
+                name: storeResponse.data.name,
+                address: storeResponse.data.address,
+                location: {
+                    latitude: storeResponse.data.location.latitude,
+                    longitude: storeResponse.data.location.longitude
+                }
+            };
+
+            setDrivers(driverData);
+            setStore(storeData);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -127,14 +158,13 @@ const ClientMap = () => {
         fetchData();
         const interval = setInterval(() => {
             fetchData();
-        }, 5000);
+        }, 2000);
 
         return () => clearInterval(interval);
     }, []);
 
     const handleLoad = (map) => {
         mapRef.current = map;
-        console.log('Maps API has loaded.');
     };
 
     return (
@@ -146,7 +176,7 @@ const ClientMap = () => {
                 onLoad={handleLoad}
                 style={{ width: '100%', height: '100vh' }}
             >
-                <PoiMarkers pois={locations} map={mapRef.current} />
+                <ClientMarkers drivers={drivers} store={store} map={mapRef.current} />
             </Map>
         </APIProvider>
     );

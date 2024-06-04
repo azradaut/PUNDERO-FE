@@ -2,14 +2,10 @@ import React from 'react';
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 
 function ViewItemPopup({ item, onClose, onDelete }) {
-  const handleDeleteClick = () => {
-    // Call onDelete with the item for deletion
-    onDelete(item);
-    onClose(); // Close the popup after deletion
-  };
+ 
 
   if (!item) {
-    return null; // Return null if item is undefined or null
+    return null; 
   }
 
   return (
@@ -31,9 +27,7 @@ function ViewItemPopup({ item, onClose, onDelete }) {
         ))}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleDeleteClick} variant="contained" color="error">
-          Delete
-        </Button>
+        
         <Button onClick={onClose}>Cancel</Button>
       </DialogActions>
     </Dialog>

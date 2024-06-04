@@ -21,7 +21,7 @@ function EditAccount({ account, onSave, onClose }) {
       email: account.email,
       qualification: account.qualification,
       description: account.description,
-      idAccount: account.idAccount // Ensure the idAccount is included
+      idAccount: account.idAccount 
     });
   }, [account]);
 
@@ -45,7 +45,7 @@ function EditAccount({ account, onSave, onClose }) {
     const error = validateField(name, value);
     if (files) {
       const file = files[0];
-      setImageFile(file);  // Store the file to upload it later
+      setImageFile(file);  
     } else {
       setFormData({ ...formData, [name]: value });
     }

@@ -48,7 +48,7 @@ function Mobiles() {
 
   const handleAddItem = async (formData) => {
     try {
-      console.log('Form Data:', formData); // Log form data for debugging
+      console.log('Form Data:', formData); 
       const response = await fetch('http://localhost:8515/api/Mobile', {
         method: 'POST',
         headers: {
@@ -58,7 +58,7 @@ function Mobiles() {
       });
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('Error adding mobile:', errorData.errors); // Log detailed error response
+        console.error('Error adding mobile:', errorData.errors); 
         throw new Error('Failed to add mobile');
       }
       setAlertMessage('Mobile added successfully!');

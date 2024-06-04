@@ -17,6 +17,9 @@ function ViewAccount({ account, onClose }) {
     }
   };
 
+  const imageUrl = image ? `http://localhost:8515/images/profile_images/${image}` : null;
+  console.log("Image URL:", imageUrl); // Log the image URL
+
   return (
     <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Account Details</DialogTitle>
@@ -40,7 +43,7 @@ function ViewAccount({ account, onClose }) {
             component="img"
             height="300"
             style={{ objectFit: 'contain' }}
-            image={`http://localhost:8515/images/profile_images/${image}`}
+            image={imageUrl}
             alt="Profile Image"
           />
         )}

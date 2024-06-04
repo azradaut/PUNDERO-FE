@@ -13,7 +13,7 @@ const PoiMarkers = ({ pois, map }) => {
     const [markers, setMarkers] = useState({});
     const [selectedPoi, setSelectedPoi] = useState(null);
     const infoWindowRef = useRef(null);
-    const markersRef = useRef({}); // Ref to track markers
+    const markersRef = useRef({}); // da se prate markeri
 
     useEffect(() => {
         if (map && !infoWindowRef.current) {
@@ -45,6 +45,7 @@ const PoiMarkers = ({ pois, map }) => {
             if (infoWindowRef.current) {
                 const content = `
                     <div>
+                        ${poi.type === 'driver' ? `<img src="http://localhost:8515/images/profile_images/${poi.image}" alt="Profile Image" style="width: 100px; height: 100px; object-fit: cover;"/>` : ''}
                         <h3>${poi.type === 'warehouse' ? 'Warehouse' : poi.type === 'store' ? 'Store' : 'Driver'}: ${poi.name || 'Unnamed'}</h3>
                         <p>Address: ${poi.address || ''}</p>
                         ${poi.type === 'driver' ? `<p>Phone: ${poi.phone}</p>` : ''}
@@ -82,6 +83,13 @@ const PoiMarkers = ({ pois, map }) => {
                     onCloseClick={() => setSelectedPoi(null)}
                 >
                     <div>
+                        {selectedPoi.type === 'driver' && (
+                            <img
+                                src={`http://localhost:8515/images/profile_images/Driver${selectedPoi.image}`}
+                                alt="Profile Image"
+                                style={{ width: '100px', height: '100px', objectFit: 'cover' }}
+                            />
+                        )}
                         <h3>{selectedPoi.type === 'warehouse' ? 'Warehouse' : selectedPoi.type === 'store' ? 'Store' : 'Driver'}: {selectedPoi.name || 'Unnamed'}</h3>
                         <p>Address: {selectedPoi.address || ''}</p>
                         {selectedPoi.type === 'driver' && <p>Phone: {selectedPoi.phone}</p>}
@@ -126,6 +134,7 @@ const MapCoordinator = () => {
                 location: { lat: driver.lkLatitude, lng: driver.lkLongitude },
                 name: `${driver.firstName} ${driver.lastName}`,
                 phone: driver.mobilePhoneNumber,
+                image: `${driver.firstName}${driver.lastName}.jpeg`,
                 type: 'driver'
             }));
 
@@ -142,7 +151,7 @@ const MapCoordinator = () => {
         fetchData();
         const interval = setInterval(() => {
             fetchData();
-        }, 5000); 
+        }, 2000); 
 
         return () => clearInterval(interval);
     }, []);
