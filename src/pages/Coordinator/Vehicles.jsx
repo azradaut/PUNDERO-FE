@@ -3,7 +3,7 @@ import { Button } from '@mui/material';
 import ItemTable from '../../components/ItemTable';
 import FilterBar from '../../components/FilterBar';
 import AddItem from '../../components/AddItem';
-import Alerts from '../../components/Alerts'; // Import the Alerts component
+import Alerts from '../../components/Alerts'; 
 
 const vehicleFields = [
   { name: 'registration', label: 'Registration', required: true, pattern: '^[A-Z]\\d{2}-[A-Z]-\\d{3}$', errorMessage: "Registration format must be 'A11-B-222'" },
