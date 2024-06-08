@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Select, MenuItem, Dialog, DialogTitle, DialogContent, TablePagination } from '@mui/material';
-import { useNotification } from '../../contexts/NotificationContext';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Dialog, DialogTitle, DialogContent, TextField, MenuItem, Select } from '@mui/material';
 import axios from 'axios';
 
 const PendingInvoices = () => {
@@ -8,10 +7,10 @@ const PendingInvoices = () => {
     const [stores, setStores] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [drivers, setDrivers] = useState([]);
+    const [notes, setNotes] = useState({});
     const [selectedInvoice, setSelectedInvoice] = useState(null);
     const [availabilityDetails, setAvailabilityDetails] = useState([]);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const { setNotifications } = useNotification();
 
     useEffect(() => {
         fetchInvoices();
@@ -21,18 +20,26 @@ const PendingInvoices = () => {
     }, []);
 
     const fetchInvoices = async () => {
-        const response = await axios.get('http://localhost:8515/api/Inv/pending');
-        const invoices = response.data;
+        try {
+            const response = await axios.get('http://localhost:8515/api/Inv/pending');
+            const invoices = response.data;
 
-        for (let invoice of invoices) {
-            const availabilityResponse = await axios.post('http://localhost:8515/api/Product/CheckAvailability', invoice.invoiceProducts.map(product => ({
-                productId: product.idProduct,
-                quantity: product.orderQuantity
-            })));
-            invoice.allAvailable = availabilityResponse.data.allAvailable;
+            const updatedInvoices = await Promise.all(invoices.map(async (invoice) => {
+                const products = invoice.products || [];
+                console.log('Products for invoice:', invoice.idInvoice, products); // Log the products
+                const availabilityResponse = await axios.post('http://localhost:8515/api/Product/CheckAvailability', products.map(product => ({
+                    productId: product.idProduct,
+                    quantity: product.orderQuantity
+                })));
+                console.log('Availability response for invoice:', invoice.idInvoice, availabilityResponse.data); // Log the response
+                invoice.allAvailable = availabilityResponse.data.allAvailable;
+                return invoice;
+            }));
+
+            setInvoices(updatedInvoices);
+        } catch (error) {
+            console.error('Error fetching invoices:', error);
         }
-
-        setInvoices(invoices);
     };
 
     const fetchStores = async () => {
@@ -46,55 +53,66 @@ const PendingInvoices = () => {
     };
 
     const fetchDrivers = async () => {
-        const response = await axios.get('http://localhost:8515/api/Driver/GetDriversWithName');
+        const response = await axios.get('http://localhost:8515/api/Driver/GetDriversWithName/GetDriversWithName');
         setDrivers(response.data);
     };
 
     const handleApprove = async (invoice) => {
-      if (!invoice.selectedDriver || !invoice.selectedWarehouse) {
-          alert("Please select both driver and warehouse.");
-          return;
-      }
-  
-      try {
-        window.location.reload();
-          await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/assign`, {
-              warehouseId: invoice.selectedWarehouse,
-              driverId: invoice.selectedDriver
-          });
-  
-          await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/approve`);
-          
-          setInvoices((prevInvoices) =>
-              prevInvoices.filter((inv) => inv.idInvoice !== invoice.idInvoice)
-          );
-          setNotifications((prev) => [...prev, { message: 'Invoice approved', seen: false }]);
-      } catch (error) {
-          console.error('Error approving invoice:', error);
-      }
-  };
-  
+        if (!invoice.selectedDriver || !invoice.selectedWarehouse) {
+            alert("Please select both driver and warehouse.");
+            return;
+        }
 
-    const handleReject = async (invoice) => {
         try {
             window.location.reload();
-            await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/reject`);
+            await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/assign`, {
+                warehouseId: invoice.selectedWarehouse,
+                driverId: invoice.selectedDriver
+            });
+
+            await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/approve`, { note: notes[invoice.idInvoice] || '' });
+
+            setInvoices((prevInvoices) =>
+                prevInvoices.filter((inv) => inv.idInvoice !== invoice.idInvoice)
+            );
+        } catch (error) {
+            console.error('Error approving invoice:', error);
+        }
+    };
+
+    const handleReject = async (invoice) => {
+        if (!notes[invoice.idInvoice]) {
+            alert("Please enter a note for rejection.");
+            return;
+        }
+
+        try {
+            window.location.reload();
+            await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/reject`, { note: notes[invoice.idInvoice] });
+
             setInvoices(prev => prev.filter(inv => inv.idInvoice !== invoice.idInvoice));
-            setNotifications(prev => [...prev, { message: 'Invoice rejected', seen: false }]);
         } catch (error) {
             console.error('Error rejecting invoice:', error);
         }
     };
 
     const checkAvailability = async (invoice) => {
-        const response = await axios.post('http://localhost:8515/api/Product/CheckAvailability', invoice.invoiceProducts.map(product => ({
-            productId: product.idProduct,
-            quantity: product.orderQuantity
-        })));
+        try {
+            const products = invoice.products || [];
+            console.log('Checking availability for products:', products); // Log the products being checked
+            const response = await axios.post('http://localhost:8515/api/Product/CheckAvailability', products.map(product => ({
+                productId: product.idProduct,
+                quantity: product.orderQuantity
+            })));
+            
+            console.log('Availability Response:', response.data);
 
-        setAvailabilityDetails(response.data.products);
-        setSelectedInvoice(invoice);
-        setIsDialogOpen(true);
+            setAvailabilityDetails(response.data.products || []);
+            setSelectedInvoice(invoice);
+            setIsDialogOpen(true);
+        } catch (error) {
+            console.error('Error checking availability:', error);
+        }
     };
 
     const handleDialogClose = () => {
@@ -154,6 +172,12 @@ const PendingInvoices = () => {
                                     <Button onClick={() => checkAvailability(invoice)}>More</Button>
                                 </TableCell>
                                 <TableCell>
+                                    <TextField
+                                        label="Note"
+                                        value={notes[invoice.idInvoice] || ''}
+                                        onChange={(e) => setNotes({ ...notes, [invoice.idInvoice]: e.target.value })}
+                                        fullWidth
+                                    />
                                     <Button onClick={() => handleApprove(invoice)}>Approve</Button>
                                     <Button onClick={() => handleReject(invoice)}>Reject</Button>
                                 </TableCell>

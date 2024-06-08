@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem, Select } from '@mui/material';
+import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TablePagination } from '@mui/material';
 import FilterBar from '../../components/FilterBar';
 import axios from 'axios';
 
@@ -9,6 +9,8 @@ function Invoices() {
   const [statusFilter, setStatusFilter] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchData();
@@ -31,8 +33,7 @@ function Invoices() {
     setFilteredInvoices(filtered);
   };
 
-  const handleStatusChange = (event) => {
-    const status = event.target.value;
+  const handleStatusChange = (status) => {
     setStatusFilter(status);
     if (status === '') {
       setFilteredInvoices(invoices);
@@ -57,20 +58,36 @@ function Invoices() {
     setSelectedInvoice(null);
   };
 
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const filterOptions = [
+    { value: 'Pending', label: 'Pending' },
+    { value: 'Approved', label: 'Approved' },
+    { value: 'Rejected', label: 'Rejected' },
+    { value: 'In Transit', label: 'In Transit' },
+    { value: 'Delivered', label: 'Delivered' },
+    { value: 'Completed', label: 'Completed' },
+    { value: 'Failed', label: 'Failed' },
+  ];
+
   return (
     <div>
       <h2>Invoices</h2>
-      <FilterBar onSearchChange={handleSearchChange} />
-      <Select value={statusFilter} onChange={handleStatusChange} fullWidth margin="normal">
-        <MenuItem value="">All</MenuItem>
-        <MenuItem value="Pending">Pending</MenuItem>
-        <MenuItem value="Approved">Approved</MenuItem>
-        <MenuItem value="Rejected">Rejected</MenuItem>
-        <MenuItem value="In Transit">In Transit</MenuItem>
-        <MenuItem value="Delivered">Delivered</MenuItem>
-        <MenuItem value="Completed">Completed</MenuItem>
-        <MenuItem value="Failed">Failed</MenuItem>
-      </Select>
+      <div style={{ padding: '16px 0' }}>
+        <FilterBar
+          onSearchChange={handleSearchChange}
+          onFilterChange={handleStatusChange}
+          filterOptions={filterOptions}
+          filterValue={statusFilter}
+        />
+      </div>
       <TableContainer component={Paper}>
         <Table>
           <TableHead>
@@ -83,7 +100,7 @@ function Invoices() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredInvoices.map((invoice) => (
+            {filteredInvoices.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map((invoice) => (
               <TableRow key={invoice.idInvoice}>
                 <TableCell>{invoice.idInvoice}</TableCell>
                 <TableCell>{new Date(invoice.issueDate).toLocaleDateString()}</TableCell>
@@ -96,6 +113,15 @@ function Invoices() {
             ))}
           </TableBody>
         </Table>
+        <TablePagination
+          rowsPerPageOptions={[10, 25, 50]}
+          component="div"
+          count={filteredInvoices.length}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onPageChange={handleChangePage}
+          onRowsPerPageChange={handleChangeRowsPerPage}
+        />
       </TableContainer>
       <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
         <DialogTitle>Invoice Details</DialogTitle>
@@ -108,6 +134,7 @@ function Invoices() {
               <p><strong>Warehouse:</strong> {selectedInvoice.warehouseName}</p>
               <p><strong>Driver:</strong> {selectedInvoice.driverName}</p>
               <p><strong>Status:</strong> {selectedInvoice.statusName}</p>
+              <p><strong>Note:</strong> {selectedInvoice.note}</p>
               <h4>Products:</h4>
               <Table>
                 <TableHead>
