@@ -28,9 +28,9 @@ function AddItem({ onAdd, onClose, fields }) {
   };
 
   const handleConfirm = async () => {
-    // Clear previous errors
+    
     setErrors({});
-    // Validate all fields before submitting
+    
     const newErrors = {};
     fields.forEach(field => {
       const error = validateField(field.name, formData[field.name]);

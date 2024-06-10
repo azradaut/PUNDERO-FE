@@ -3,12 +3,18 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Table, Table
 import axios from 'axios';
 import AddAccount from '../../components/AddAccount';
 import EditAccount from '../../components/EditAccount';
+import Alerts from '../../components/Alerts';
+import ViewAccount from '../../components/ViewAccount';
 
 const Clients = () => {
     const [clients, setClients] = useState([]);
     const [selectedClient, setSelectedClient] = useState(null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isEdit, setIsEdit] = useState(false);
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertSeverity, setAlertSeverity] = useState('success');
+    const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
     useEffect(() => {
         fetchClients();
@@ -34,12 +40,23 @@ const Clients = () => {
         setIsDialogOpen(true);
     };
 
+    const handleViewClient = (clientId) => {
+        setSelectedClient(clientId);
+        setIsViewDialogOpen(true);
+    };
+
     const handleDeleteClient = async (clientId) => {
         try {
             await axios.delete(`http://localhost:8515/api/Client/DeleteClient/${clientId}`);
             fetchClients();
+            setAlertMessage('Client deleted successfully!');
+            setAlertSeverity('success');
+            setAlertOpen(true);
         } catch (error) {
             console.error('Error deleting client:', error);
+            setAlertMessage('Error deleting client.');
+            setAlertSeverity('error');
+            setAlertOpen(true);
         }
     };
 
@@ -51,6 +68,14 @@ const Clients = () => {
     const handleClientUpdated = () => {
         fetchClients();
         handleDialogClose();
+        setAlertMessage(isEdit ? 'Client edited successfully!' : 'Client added successfully!');
+        setAlertSeverity('success');
+        setAlertOpen(true);
+    };
+
+    const handleCloseViewDialog = () => {
+        setIsViewDialogOpen(false);
+        setSelectedClient(null);
     };
 
     return (
@@ -77,6 +102,7 @@ const Clients = () => {
                             <TableCell>{client.email}</TableCell>
                             <TableCell>{client.store}</TableCell>
                             <TableCell>
+                                <Button onClick={() => handleViewClient(client.idAccount)}>View</Button>
                                 <Button onClick={() => handleEditClient(client)}>Edit</Button>
                                 <Button onClick={() => handleDeleteClient(client.idClient)}>Delete</Button>
                             </TableCell>
@@ -92,22 +118,24 @@ const Clients = () => {
                             accountType="Client"
                             accountId={selectedClient.idAccount}
                             onAccountUpdated={handleClientUpdated}
-                            additionalFields={[{ name: 'Store', label: 'Store' }]}
+                            onClose={handleDialogClose}
+                            additionalFields={[{ name: 'store', label: 'Store' }]}
                         />
                     ) : (
                         <AddAccount
-                            accountType="Client"
                             onAccountAdded={handleClientUpdated}
-                            additionalFields={[{ name: 'Store', label: 'Store' }]}
+                            onClose={handleDialogClose}
                         />
                     )}
                 </DialogContent>
-                <DialogActions>
-                    <Button onClick={handleDialogClose} color="primary">
-                        Cancel
-                    </Button>
-                </DialogActions>
             </Dialog>
+            {isViewDialogOpen && <ViewAccount accountType="Client" accountId={selectedClient} onClose={handleCloseViewDialog} />}
+            <Alerts
+                open={alertOpen}
+                message={alertMessage}
+                severity={alertSeverity}
+                onClose={() => setAlertOpen(false)}
+            />
         </div>
     );
 };
