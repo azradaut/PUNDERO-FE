@@ -28,7 +28,12 @@ function ViewAccount({ accountId, accountType, onClose }) {
       <DialogContent>
         <TextField
           label="ID"
-          value={accountType === 'Client' ? accountData.idClient : accountData.idDriver}
+          value={
+            accountType === 'Client' ? accountData.idClient :
+            accountType === 'Driver' ? accountData.idDriver :
+            accountType === 'Coordinator' ? accountData.idCoordinator :
+            ''
+          }
           fullWidth
           InputProps={{
             readOnly: true,
@@ -145,6 +150,40 @@ function ViewAccount({ accountId, accountType, onClose }) {
             <TextField
               label="Type"
               value="Driver"
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+          </>
+        )}
+        {accountType === 'Coordinator' && (
+          <>
+            <TextField
+              label="Qualification"
+              value={accountData.qualification}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Description"
+              value={accountData.description}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Type"
+              value="Coordinator"
               fullWidth
               InputProps={{
                 readOnly: true,

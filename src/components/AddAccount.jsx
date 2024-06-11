@@ -1,42 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
+import { DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import Alerts from './Alerts';
 
-const AddAccount = ({ accountType, onClose, onAccountAdded }) => {
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        email: '',
-        password: '',
-        store: '',
-        licenseNumber: '',
-        licenseCategory: '',
-        tachographLabel: '',
-        tachographIssueDate: '',
-        tachographExpiryDate: ''
-    });
+const AddAccount = ({ accountType, onClose, onAccountAdded, additionalFields = [] }) => {
+    const [formValues, setFormValues] = useState({});
     const [image, setImage] = useState(null);
-    const [stores, setStores] = useState([]);
     const [alertOpen, setAlertOpen] = useState(false);
     const [alertMessage, setAlertMessage] = useState('');
     const [alertSeverity, setAlertSeverity] = useState('success');
 
     useEffect(() => {
-        if (accountType === 'Client') {
-            fetchStores();
-        }
-    }, [accountType]);
-
-    const fetchStores = async () => {
-        try {
-            const response = await axios.get('http://localhost:8515/api/Stores/GetStores');
-            setStores(response.data);
-        } catch (error) {
-            console.error('Error fetching stores:', error);
-        }
-    };
+        const initialFormValues = {};
+        additionalFields.forEach(field => {
+            initialFormValues[field.name] = '';
+        });
+        setFormValues(initialFormValues);
+    }, [additionalFields]);
 
     const handleDrop = (acceptedFiles) => {
         setImage(acceptedFiles[0]);
@@ -49,38 +30,34 @@ const AddAccount = ({ accountType, onClose, onAccountAdded }) => {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        setFormValues({ ...formValues, [name]: value });
     };
 
     const handleSubmit = async () => {
-        if (!formData.firstName || !formData.lastName || !formData.email || !formData.password) {
+        if (!formValues.firstName || !formValues.lastName || !formValues.email || !formValues.password) {
             setAlertMessage('Please fill in all required fields.');
             setAlertSeverity('error');
             setAlertOpen(true);
             return;
         }
 
-        const form = new FormData();
-        form.append('firstName', formData.firstName);
-        form.append('lastName', formData.lastName);
-        form.append('email', formData.email);
-        form.append('password', formData.password);
-        form.append('type', accountType);
-        if (accountType === 'Client') {
-            form.append('store', formData.store);
-        } else if (accountType === 'Driver') {
-            form.append('licenseNumber', formData.licenseNumber);
-            form.append('licenseCategory', formData.licenseCategory);
-            form.append('tachographLabel', formData.tachographLabel);
-            form.append('tachographIssueDate', formData.tachographIssueDate);
-            form.append('tachographExpiryDate', formData.tachographExpiryDate);
-        }
+        const formData = new FormData();
+        formData.append('firstName', formValues.firstName);
+        formData.append('lastName', formValues.lastName);
+        formData.append('email', formValues.email);
+        formData.append('password', formValues.password);
+        formData.append('type', accountType);
+
+        additionalFields.forEach(field => {
+            formData.append(field.name, formValues[field.name]);
+        });
+
         if (image) {
-            form.append('imageFile', image);
+            formData.append('imageFile', image);
         }
 
         try {
-            await axios.post(`http://localhost:8515/api/${accountType}/Add${accountType}`, form);
+            await axios.post(`http://localhost:8515/api/${accountType}/Add${accountType}`, formData);
             onAccountAdded();
         } catch (error) {
             console.error(`Error adding ${accountType.toLowerCase()}:`, error);
@@ -97,7 +74,7 @@ const AddAccount = ({ accountType, onClose, onAccountAdded }) => {
                 <TextField
                     label="First Name"
                     name="firstName"
-                    value={formData.firstName}
+                    value={formValues.firstName || ''}
                     onChange={handleChange}
                     fullWidth
                     variant="outlined"
@@ -107,7 +84,7 @@ const AddAccount = ({ accountType, onClose, onAccountAdded }) => {
                 <TextField
                     label="Last Name"
                     name="lastName"
-                    value={formData.lastName}
+                    value={formValues.lastName || ''}
                     onChange={handleChange}
                     fullWidth
                     variant="outlined"
@@ -117,7 +94,7 @@ const AddAccount = ({ accountType, onClose, onAccountAdded }) => {
                 <TextField
                     label="Email"
                     name="email"
-                    value={formData.email}
+                    value={formValues.email || ''}
                     onChange={handleChange}
                     fullWidth
                     variant="outlined"
@@ -126,87 +103,27 @@ const AddAccount = ({ accountType, onClose, onAccountAdded }) => {
                 />
                 <TextField
                     label="Password"
-                    type="password"
                     name="password"
-                    value={formData.password}
+                    type="password"
+                    value={formValues.password || ''}
                     onChange={handleChange}
                     fullWidth
                     variant="outlined"
                     margin="normal"
                     required
                 />
-                {accountType === 'Client' && (
+                {additionalFields.map(field => (
                     <TextField
-                        label="Store"
-                        select
-                        name="store"
-                        value={formData.store}
+                        key={field.name}
+                        label={field.label}
+                        name={field.name}
+                        value={formValues[field.name] || ''}
                         onChange={handleChange}
                         fullWidth
                         variant="outlined"
                         margin="normal"
-                        required
-                    >
-                        {stores.map((store) => (
-                            <MenuItem key={store.idStore} value={store.name}>
-                                {store.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                )}
-                {accountType === 'Driver' && (
-                    <>
-                        <TextField
-                            label="License Number"
-                            name="licenseNumber"
-                            value={formData.licenseNumber}
-                            onChange={handleChange}
-                            fullWidth
-                            margin="normal"
-                            variant="outlined"
-                        />
-                        <TextField
-                            label="License Category"
-                            name="licenseCategory"
-                            value={formData.licenseCategory}
-                            onChange={handleChange}
-                            fullWidth
-                            margin="normal"
-                            variant="outlined"
-                        />
-                        <TextField
-                            label="Tachograph Label"
-                            name="tachographLabel"
-                            value={formData.tachographLabel}
-                            onChange={handleChange}
-                            fullWidth
-                            margin="normal"
-                            variant="outlined"
-                        />
-                        <TextField
-                            label="Tachograph Issue Date"
-                            type="date"
-                            name="tachographIssueDate"
-                            value={formData.tachographIssueDate}
-                            onChange={handleChange}
-                            fullWidth
-                            margin="normal"
-                            InputLabelProps={{ shrink: true }}
-                            variant="outlined"
-                        />
-                        <TextField
-                            label="Tachograph Expiry Date"
-                            type="date"
-                            name="tachographExpiryDate"
-                            value={formData.tachographExpiryDate}
-                            onChange={handleChange}
-                            fullWidth
-                            margin="normal"
-                            InputLabelProps={{ shrink: true }}
-                            variant="outlined"
-                        />
-                    </>
-                )}
+                    />
+                ))}
                 <div {...getRootProps({ className: 'dropzone' })} style={{ border: '1px dashed #ccc', padding: '20px', textAlign: 'center', marginTop: '20px' }}>
                     <input {...getInputProps()} />
                     {image ? (
