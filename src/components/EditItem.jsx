@@ -4,13 +4,16 @@ import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } 
 function EditItem({ item, onSave, onClose, fields }) {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
+  const [isSaving, setIsSaving] = useState(false); // Add this state to prevent multiple calls
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (item) {
-      console.log("Editing item: ", item);
+    if (item && !isInitialized) {
       setFormData(item);
+      setIsInitialized(true);
+      console.log("EditItem - formData set: ", item);
     }
-  }, [item]);
+  }, [item, isInitialized]);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -19,8 +22,6 @@ function EditItem({ item, onSave, onClose, fields }) {
     if (field) {
       if (field.required && !value) {
         error = `${field.label} is required`;
-      } else if (field.pattern && !new RegExp(field.pattern).test(value)) {
-        error = field.errorMessage || `Invalid format for ${field.label}`;
       } else if (field.maxLength && value.length > field.maxLength) {
         error = `${field.label} cannot be longer than ${field.maxLength} characters`;
       }
@@ -30,29 +31,40 @@ function EditItem({ item, onSave, onClose, fields }) {
   };
 
   const handleSave = async () => {
-    setErrors({});
+    if (isSaving) return; // Prevent multiple calls
+    setIsSaving(true);
+    console.log("EditItem - handleSave called");
     try {
       await onSave(formData);
-      onClose();
+      console.log("EditItem - onSave completed");
+      onClose(); // Ensure the dialog is closed after successful save
     } catch (error) {
+      console.log("EditItem - error: ", error);
       if (error && error.data) {
         const validationErrors = error.data.errors || {};
         setErrors(validationErrors);
       } else {
         console.error("Unexpected error:", error);
       }
+    } finally {
+      setIsSaving(false); // Reset saving state
     }
   };
 
+  const handleDialogClose = () => {
+    console.log("EditItem - handleDialogClose called");
+    onClose();
+  };
+
   return (
-    <Dialog open={true} onClose={onClose}>
+    <Dialog open={true} onClose={handleDialogClose}>
       <DialogTitle>Edit Item</DialogTitle>
       <DialogContent>
         {fields.map((field) => (
           <TextField
             key={field.name}
             name={field.name}
-            label={`${field.label} ${field.pattern ? `(format: ${field.placeholder})` : ''}`}
+            label={field.label}
             value={formData[field.name] || ''}
             onChange={handleChange}
             fullWidth
@@ -61,13 +73,13 @@ function EditItem({ item, onSave, onClose, fields }) {
             helperText={errors[field.name] ? errors[field.name][0] : ''}
             type={field.type || 'text'}
             InputLabelProps={{ shrink: true }}
-            placeholder={formData[field.name] || field.placeholder || ''}
+            placeholder={field.placeholder || ''}
           />
         ))}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleSave} variant="contained" color="primary">Save</Button>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSave} variant="contained" color="primary" disabled={isSaving}>Save</Button>
+        <Button onClick={handleDialogClose}>Cancel</Button>
       </DialogActions>
     </Dialog>
   );

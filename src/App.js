@@ -31,6 +31,8 @@ import AssignMobile from './pages/Coordinator/AssignMobile';
 import AssignVehicle from './pages/Coordinator/AssignVehicle';
 import ClientInvoices from './pages/Client/ClientInvoices';
 import Mobiles from './pages/Coordinator/Mobiles';
+import Stores from './pages/Coordinator/Stores';
+import ProductsCoordiantor from './pages/Coordinator/ProductsCoordiantor';
 
 const CoordinatorLayout = () => {
   return (
@@ -74,6 +76,8 @@ function App() {
             <Route path="dashboard" element={<CoordinatorDashboard />} />
             <Route path="accounts" element={<Accounts />} />
             <Route path="vehicles" element={<Vehicles />} />
+            <Route path="stores" element={<Stores />} />
+            <Route path="products_coordinator" element={<ProductsCoordiantor />} />
             <Route path="mobiles" element={<Mobiles />} />
             <Route path="map" element={<MapCoordinator />} />
             <Route path="invoices" element={<Invoices />} />

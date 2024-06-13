@@ -57,6 +57,7 @@ const EditAccount = ({ accountType, accountId, onAccountUpdated, onClose, additi
         formData.append('LastName', accountData.lastName);
         formData.append('Email', accountData.email);
         formData.append('Password', accountData.password);
+        formData.append('Store', accountData.store);
 
         if (accountData.ImageFile) {
             formData.append('ImageFile', accountData.ImageFile);

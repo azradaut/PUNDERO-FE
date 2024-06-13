@@ -11,8 +11,6 @@ function AddItem({ onAdd, onClose, fields }) {
     if (field) {
       if (field.required && !value) {
         error = `${field.label} is required`;
-      } else if (field.pattern && !new RegExp(field.pattern).test(value)) {
-        error = field.errorMessage || `Invalid format for ${field.label}`;
       } else if (field.maxLength && value.length > field.maxLength) {
         error = `${field.label} cannot be longer than ${field.maxLength} characters`;
       }
@@ -28,9 +26,7 @@ function AddItem({ onAdd, onClose, fields }) {
   };
 
   const handleConfirm = async () => {
-    
     setErrors({});
-    
     const newErrors = {};
     fields.forEach(field => {
       const error = validateField(field.name, formData[field.name]);
@@ -46,6 +42,7 @@ function AddItem({ onAdd, onClose, fields }) {
 
     try {
       await onAdd(formData);
+      setFormData({});
       onClose();
     } catch (error) {
       if (error.response && error.response.data) {
@@ -65,7 +62,7 @@ function AddItem({ onAdd, onClose, fields }) {
           <TextField
             key={field.name}
             name={field.name}
-            label={`${field.label} ${field.pattern ? `(format: ${field.placeholder})` : ''}`}
+            label={field.label}
             value={formData[field.name] || ''}
             onChange={handleChange}
             fullWidth

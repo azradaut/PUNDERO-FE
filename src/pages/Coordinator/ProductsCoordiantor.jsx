@@ -20,23 +20,21 @@ import {
   DialogActions,
 } from '@mui/material';
 
-const vehicleFields = [
-  { name: 'registration', label: 'Registration', required: true, pattern: '^[A-Z]\\d{2}-[A-Z]-\\d{3}$', errorMessage: "Registration format must be 'A11-B-222'" },
-  { name: 'issueDate', label: 'Issue Date', required: true, type: 'date', placeholder: 'yyyy-MM-dd' },
-  { name: 'expiryDate', label: 'Expiry Date', required: true, type: 'date', placeholder: 'yyyy-MM-dd' },
-  { name: 'brand', label: 'Brand', required: true, maxLength: 20 },
-  { name: 'model', label: 'Model', required: true, maxLength: 20 },
-  { name: 'color', label: 'Color', required: true, maxLength: 20 }
+const productFields = [
+  { name: 'nameProduct', label: 'Name', required: true, maxLength: 50 },
+  { name: 'quantity', label: 'Quantity', required: true, type: 'number' },
+  { name: 'price', label: 'Price', required: true, type: 'number' },
+  { name: 'barcode', label: 'Barcode', required: true, type: 'number' },
+  { name: 'warehouseName', label: 'Warehouse', required: true }
 ];
 
-function Vehicles() {
-  const [vehicles, setVehicles] = useState([]);
-  const [vehicleAssignments, setVehicleAssignments] = useState([]);
-  const [filteredVehicles, setFilteredVehicles] = useState([]);
+function Products() {
+  const [products, setProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
-  const [selectedVehicle, setSelectedVehicle] = useState(null);
-  const [viewVehicle, setViewVehicle] = useState(null);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [viewProduct, setViewProduct] = useState(null);
   const [alertOpen, setAlertOpen] = useState(false);
   const [alertMessage, setAlertMessage] = useState('');
   const [alertSeverity, setAlertSeverity] = useState('success');
@@ -47,43 +45,32 @@ function Vehicles() {
 
   useEffect(() => {
     fetchData();
-    fetchAssignments();
   }, []);
 
   const fetchData = async () => {
     try {
-      const response = await fetch('http://localhost:8515/api/Vehicle');
+      const response = await fetch('http://localhost:8515/api/ProductsCoordinator/GetProductsCoordinator');
       const data = await response.json();
-      setVehicles(data);
-      setFilteredVehicles(data);
+      setProducts(data);
+      setFilteredProducts(data);
     } catch (error) {
-      console.error('Error fetching vehicles:', error);
-    }
-  };
-
-  const fetchAssignments = async () => {
-    try {
-      const response = await fetch('http://localhost:8515/api/VehicleDriver/GetAssignments');
-      const data = await response.json();
-      setVehicleAssignments(data);
-    } catch (error) {
-      console.error('Error fetching vehicle assignments:', error);
+      console.error('Error fetching products:', error);
     }
   };
 
   const handleSearchChange = (newSearchText) => {
     setSearchText(newSearchText);
-    const filteredResult = vehicles.filter((vehicle) => {
-      return Object.values(vehicle).some((value) =>
+    const filteredResult = products.filter((product) => {
+      return Object.values(product).some((value) =>
         typeof value === 'string' && value.toLowerCase().includes(newSearchText.toLowerCase())
       );
     });
-    setFilteredVehicles(filteredResult);
+    setFilteredProducts(filteredResult);
   };
 
   const handleAddItem = async (formData) => {
     try {
-      const response = await fetch('http://localhost:8515/api/Vehicle', {
+      const response = await fetch('http://localhost:8515/api/ProductsCoordinator/AddProductCoordinator', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,17 +78,15 @@ function Vehicles() {
         body: JSON.stringify(formData),
       });
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Error adding vehicle:', errorData.errors);
-        throw new Error('Failed to add vehicle');
+        throw new Error('Failed to add product');
       }
-      setAlertMessage('Vehicle added successfully!');
+      setAlertMessage('Product added successfully!');
       setAlertSeverity('success');
       fetchData();
     } catch (error) {
-      setAlertMessage('Error adding vehicle.');
+      setAlertMessage('Error adding product.');
       setAlertSeverity('error');
-      console.error('Error adding vehicle:', error);
+      console.error('Error adding product:', error);
     } finally {
       setAlertOpen(true);
     }
@@ -109,7 +94,7 @@ function Vehicles() {
 
   const handleEditItem = async (formData) => {
     try {
-      const response = await fetch(`http://localhost:8515/api/Vehicle/Update/${formData.idVehicle}`, {
+      const response = await fetch(`http://localhost:8515/api/ProductsCoordinator/UpdateProductCoordinator/${formData.idProduct}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,16 +102,16 @@ function Vehicles() {
         body: JSON.stringify(formData),
       });
       if (!response.ok) {
-        throw new Error('Failed to update vehicle');
+        throw new Error('Failed to update product');
       }
-      setAlertMessage('Vehicle updated successfully!');
+      setAlertMessage('Product updated successfully!');
       setAlertSeverity('success');
       fetchData();
-      setSelectedVehicle(null);
+      setSelectedProduct(null);
     } catch (error) {
-      setAlertMessage('Error updating vehicle.');
+      setAlertMessage('Error updating product.');
       setAlertSeverity('error');
-      console.error('Error updating vehicle:', error);
+      console.error('Error updating product:', error);
     } finally {
       setAlertOpen(true);
     }
@@ -134,19 +119,19 @@ function Vehicles() {
 
   const handleDeleteItemClick = async (item) => {
     try {
-      const response = await fetch(`http://localhost:8515/api/Vehicle/${item.idVehicle}`, {
+      const response = await fetch(`http://localhost:8515/api/ProductsCoordinator/DeleteProductCoordinator/${item.idProduct}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
-        throw new Error('Failed to delete vehicle');
+        throw new Error('Failed to delete product');
       }
-      setAlertMessage('Vehicle deleted successfully!');
+      setAlertMessage('Product deleted successfully!');
       setAlertSeverity('success');
       fetchData();
     } catch (error) {
-      setAlertMessage('Error deleting vehicle.');
+      setAlertMessage('Error deleting product.');
       setAlertSeverity('error');
-      console.error('Error deleting vehicle:', error);
+      console.error('Error deleting product:', error);
     } finally {
       setAlertOpen(true);
     }
@@ -166,11 +151,7 @@ function Vehicles() {
   };
 
   const handleViewItemClick = (item) => {
-    const enrichedVehicle = {
-      ...item,
-      driverName: getDriverName(item.registration),
-    };
-    setViewVehicle(enrichedVehicle);
+    setViewProduct(item);
   };
 
   const handleDeleteItemButtonClick = (item) => {
@@ -189,59 +170,55 @@ function Vehicles() {
     setConfirmDeleteOpen(false);
   };
 
-  const getDriverName = (registration) => {
-    const assignment = vehicleAssignments.find(a => a.vehicleRegistration === registration);
-    return assignment ? assignment.driverName : 'No Driver';
-  };
-
-  const displayHeaders = {
-    idVehicle: 'ID',
-    registration: 'Registration',
-    brand: 'Brand',
-    model: 'Model',
-    assignmentType: 'Assignment Type'
+  const getDisplayHeaders = () => {
+    return {
+      idProduct: 'ID',
+      nameProduct: 'Name',
+      quantity: 'Quantity',
+      price: 'Price'
+    };
   };
 
   return (
     <div>
-      <h2>Vehicles</h2>
+      <h2>Products</h2>
       <FilterBar onSearchChange={handleSearchChange} />
       <Button onClick={() => setShowAddDialog(true)}>Add</Button>
       {showAddDialog && (
-        <AddItem onAdd={handleAddItem} onClose={() => setShowAddDialog(false)} fields={vehicleFields} />
+        <AddItem onAdd={handleAddItem} onClose={() => setShowAddDialog(false)} fields={productFields} />
       )}
-      {selectedVehicle && (
-        <EditItem item={selectedVehicle} onSave={handleEditItem} onClose={() => setSelectedVehicle(null)} fields={vehicleFields} />
+      {selectedProduct && (
+        <EditItem item={selectedProduct} onSave={handleEditItem} onClose={() => setSelectedProduct(null)} fields={productFields} />
       )}
-      {viewVehicle && (
-        <ViewItemPopup item={viewVehicle} onClose={() => setViewVehicle(null)} />
+      {viewProduct && (
+        <ViewItemPopup item={viewProduct} onClose={() => setViewProduct(null)} />
       )}
-      {filteredVehicles.length > 0 ? (
+      {filteredProducts.length > 0 ? (
         <div style={{ overflowX: 'auto' }}>
           <TableContainer component={Paper}>
             <Table stickyHeader aria-label="sticky table">
               <TableHead>
                 <TableRow>
-                  {Object.keys(displayHeaders).map((header) => (
-                    <TableCell key={header}>{displayHeaders[header]}</TableCell>
+                  {Object.keys(getDisplayHeaders()).map((header) => (
+                    <TableCell key={header}>{getDisplayHeaders()[header]}</TableCell>
                   ))}
                   <TableCell>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
                 {(rowsPerPage > 0
-                  ? filteredVehicles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  : filteredVehicles
+                  ? filteredProducts.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  : filteredProducts
                 ).map((item) => (
-                  <TableRow key={item.idVehicle}>
-                    {Object.keys(displayHeaders).map((header) => (
-                      <TableCell key={`${item.idVehicle}-${header}`}>
-                        {header === 'assignmentType' ? item.assignmentType : item[header]}
+                  <TableRow key={item.idProduct}>
+                    {Object.keys(getDisplayHeaders()).map((header) => (
+                      <TableCell key={`${item.idProduct}-${header}`}>
+                        {item[header]}
                       </TableCell>
                     ))}
                     <TableCell>
                       <Button onClick={() => handleViewItemClick(item)}>View</Button>
-                      <Button onClick={() => setSelectedVehicle(item)}>Edit</Button>
+                      <Button onClick={() => setSelectedProduct(item)}>Edit</Button>
                       <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
                     </TableCell>
                   </TableRow>
@@ -252,7 +229,7 @@ function Vehicles() {
           <TablePagination
             rowsPerPageOptions={[10, 50, 100]}
             component="div"
-            count={filteredVehicles.length}
+            count={filteredProducts.length}
             rowsPerPage={rowsPerPage}
             page={page}
             onPageChange={handleChangePage}
@@ -270,11 +247,11 @@ function Vehicles() {
           </Dialog>
         </div>
       ) : (
-        <p>No vehicles match the current filters.</p>
+        <p>No products match the current filters.</p>
       )}
       <Alerts open={alertOpen} message={alertMessage} severity={alertSeverity} onClose={handleAlertClose} />
     </div>
   );
 }
 
-export default Vehicles;
+export default Products;
