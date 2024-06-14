@@ -1,3 +1,4 @@
+// NotificationContext.jsx
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
 
@@ -13,7 +14,7 @@ export const NotificationProvider = ({ children }) => {
     useEffect(() => {
         const fetchNotifications = async () => {
             const role = localStorage.getItem('role');
-            const idAccount = localStorage.getItem('idAccount'); // Added to get idAccount
+            const idAccount = localStorage.getItem('idAccount');
             if (role && idAccount) {
                 let endpoint = '';
                 if (role === '1') {
@@ -27,7 +28,7 @@ export const NotificationProvider = ({ children }) => {
                     setNotifications(response.data || []);
                 } catch (error) {
                     console.error('Error fetching notifications:', error);
-                    setNotifications([]); 
+                    setNotifications([]);
                 }
             } else {
                 console.error('Role or IdAccount is not available in local storage');
@@ -36,6 +37,9 @@ export const NotificationProvider = ({ children }) => {
         };
 
         fetchNotifications();
+        const interval = setInterval(fetchNotifications, 30000); 
+
+        return () => clearInterval(interval); 
     }, []);
 
     return (

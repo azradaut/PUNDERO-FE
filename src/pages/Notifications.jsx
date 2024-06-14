@@ -1,6 +1,5 @@
-// src/components/Notifications.js
 import React from 'react';
-import { List, ListItem, ListItemText, Typography, Checkbox, Button } from '@mui/material';
+import { List, ListItem, ListItemText, Typography, Button } from '@mui/material';
 import { useNotification } from '../contexts/NotificationContext';
 import axios from 'axios';
 
@@ -16,16 +15,22 @@ const Notifications = () => {
         }
     };
 
-    const handleViewNotification = (notification) => {
+    const handleViewNotification = async (notification) => {
         const role = localStorage.getItem('role');
-        if (role === '3') {
-            window.location.href = '/coordinator/pending-invoices';
-        } else if (role === '2') {
-            if (notification.message.includes('in transit')) {
-                window.location.href = '/client/map';
-            } else if (notification.message.includes('delivered')) {
-                window.location.href = '/client/delivered-invoices';
+
+        try {
+            await handleMarkAsSeen(notification.idNotification);
+            if (role === '1') {
+                window.location.href = `/coordinator/pending-invoices`;
+            } else if (role === '3') {
+                if (notification.message.includes('in transit')) {
+                    window.location.href = '/client/client-map';
+                } else if (notification.message.includes('delivered')) {
+                    window.location.href = '/client/delivered-invoices';
+                }
             }
+        } catch (error) {
+            console.error('Error marking notification as seen and navigating:', error);
         }
     };
 
@@ -37,13 +42,13 @@ const Notifications = () => {
             <List>
                 {notifications.map(notification => (
                     <ListItem key={notification.idNotification} dense>
-                        <Checkbox
-                            checked={notification.seen}
-                            onChange={() => handleMarkAsSeen(notification.idNotification)}
-                        />
                         <ListItemText primary={notification.message} secondary={new Date(notification.createdAt).toLocaleString()} />
-                        <Button onClick={() => handleViewNotification(notification)}>View</Button>
-                        <Button onClick={() => handleMarkAsSeen(notification.idNotification)}>Mark as Read</Button>
+                        <Button onClick={() => handleViewNotification(notification)} style={{ marginRight: 10 }} color="primary">
+                            View
+                        </Button>
+                        <Button onClick={() => handleMarkAsSeen(notification.idNotification)} color="secondary">
+                            Seen
+                        </Button>
                     </ListItem>
                 ))}
             </List>
