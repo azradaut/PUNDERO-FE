@@ -13,17 +13,24 @@ export const NotificationProvider = ({ children }) => {
     useEffect(() => {
         const fetchNotifications = async () => {
             const role = localStorage.getItem('role');
-            const storeName = localStorage.getItem('storeName');
-            if (role && storeName) {
+            const idAccount = localStorage.getItem('idAccount'); // Added to get idAccount
+            if (role && idAccount) {
+                let endpoint = '';
+                if (role === '1') {
+                    endpoint = `http://localhost:8515/api/Notification/coordinator/${idAccount}`;
+                } else if (role === '3') {
+                    const storeName = localStorage.getItem('storeName');
+                    endpoint = `http://localhost:8515/api/Notification/client/${storeName}`;
+                }
                 try {
-                    const response = await axios.get(`http://localhost:8515/api/Notifications/${role}/${storeName}`);
+                    const response = await axios.get(endpoint);
                     setNotifications(response.data || []);
                 } catch (error) {
                     console.error('Error fetching notifications:', error);
-                    setNotifications([]); // Ensure notifications is always an array
+                    setNotifications([]); 
                 }
             } else {
-                console.error('Role or StoreName is not available in local storage');
+                console.error('Role or IdAccount is not available in local storage');
                 setNotifications([]);
             }
         };

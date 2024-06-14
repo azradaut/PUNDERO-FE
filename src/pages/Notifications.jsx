@@ -1,3 +1,4 @@
+// src/components/Notifications.js
 import React from 'react';
 import { List, ListItem, ListItemText, Typography, Checkbox, Button } from '@mui/material';
 import { useNotification } from '../contexts/NotificationContext';

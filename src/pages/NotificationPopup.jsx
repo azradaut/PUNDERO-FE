@@ -1,3 +1,4 @@
+// NotificationPopup.jsx
 import React from 'react';
 import { Dialog, DialogTitle, List, ListItem, ListItemText, Checkbox, Button } from '@mui/material';
 import { useNotification } from '../contexts/NotificationContext';
@@ -8,7 +9,7 @@ const NotificationPopup = ({ open, onClose }) => {
 
     const handleMarkAsSeen = async (id) => {
         try {
-            await axios.put(`http://localhost:8515/api/Notification/${id}/markAsSeen`);
+            await axios.put(`http://localhost:8515/api/Notification/coordinator/${id}/markAsSeen`);
             setNotifications(prev => prev.filter(n => n.idNotification !== id));
         } catch (error) {
             console.error('Error marking notification as seen:', error);
@@ -17,9 +18,9 @@ const NotificationPopup = ({ open, onClose }) => {
 
     const handleViewNotification = (notification) => {
         const role = localStorage.getItem('role');
-        if (role === '3') {
+        if (role === '1') {
             window.location.href = '/coordinator/pending-invoices';
-        } else if (role === '2') {
+        } else if (role === '3') {
             if (notification.message.includes('in transit')) {
                 window.location.href = '/client/map';
             } else if (notification.message.includes('delivered')) {

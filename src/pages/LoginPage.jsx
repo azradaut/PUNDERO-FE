@@ -20,17 +20,17 @@ const LoginPage = () => {
         try {
             const response = await axios.post('http://localhost:8515/api/Authentication/login', { email, password });
 
-            const { token, type, firstName, lastName, storeName, clientId } = response.data;
+            const { token, type, firstName, lastName, storeName, clientId, idAccount } = response.data;
 
             if (token && type !== undefined) {
                 
                 localStorage.clear();
 
-                
                 localStorage.setItem('token', token);
                 localStorage.setItem('role', type);
                 localStorage.setItem('firstName', firstName);
                 localStorage.setItem('lastName', lastName);
+                localStorage.setItem('idAccount', idAccount); 
 
                 if (type === 3) {
                     localStorage.setItem('storeName', storeName);
@@ -39,17 +39,18 @@ const LoginPage = () => {
                     localStorage.setItem('storeName', 'PUNDERO');
                 }
 
-                
                 if (type === 1) {
                     navigate('/coordinator/dashboard');
                 } else if (type === 3) {
                     navigate('/client/dashboard');
                 }
+
+                // Reload znog notifikacija
+                window.location.reload();
             } else {
                 console.error('Token or Type is undefined:', { token, type });
             }
         } catch (error) {
-           
             if (error.response && error.response.data) {
                 const { message } = error.response.data;
                 if (message.toLowerCase().includes('email')) {

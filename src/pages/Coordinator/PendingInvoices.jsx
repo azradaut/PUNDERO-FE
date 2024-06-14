@@ -4,7 +4,6 @@ import axios from 'axios';
 
 const PendingInvoices = () => {
     const [invoices, setInvoices] = useState([]);
-    const [stores, setStores] = useState([]);
     const [warehouses, setWarehouses] = useState([]);
     const [drivers, setDrivers] = useState([]);
     const [notes, setNotes] = useState({});
@@ -14,7 +13,6 @@ const PendingInvoices = () => {
 
     useEffect(() => {
         fetchInvoices();
-        fetchStores();
         fetchWarehouses();
         fetchDrivers();
     }, []);
@@ -42,18 +40,13 @@ const PendingInvoices = () => {
         }
     };
 
-    const fetchStores = async () => {
-        const response = await axios.get('http://localhost:8515/api/Stores/GetStores');
-        setStores(response.data);
-    };
-
     const fetchWarehouses = async () => {
         const response = await axios.get('http://localhost:8515/api/Warehouses/GetWarehouses');
         setWarehouses(response.data);
     };
 
     const fetchDrivers = async () => {
-        const response = await axios.get('http://localhost:8515/api/Driver/GetDriversWithName/GetDriversWithName');
+        const response = await axios.get('http://localhost:8515/api/Driver/GetDriversWithName');
         setDrivers(response.data);
     };
 
@@ -64,7 +57,6 @@ const PendingInvoices = () => {
         }
 
         try {
-            window.location.reload();
             await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/assign`, {
                 warehouseId: invoice.selectedWarehouse,
                 driverId: invoice.selectedDriver
@@ -87,7 +79,6 @@ const PendingInvoices = () => {
         }
 
         try {
-            window.location.reload();
             await axios.put(`http://localhost:8515/api/Inv/${invoice.idInvoice}/reject`, { note: notes[invoice.idInvoice] });
 
             setInvoices(prev => prev.filter(inv => inv.idInvoice !== invoice.idInvoice));
@@ -99,7 +90,7 @@ const PendingInvoices = () => {
     const checkAvailability = async (invoice) => {
         try {
             const products = invoice.products || [];
-            console.log('Checking availability for products:', products); // Log the products being checked
+            console.log('Checking availability for products:', products); 
             const response = await axios.post('http://localhost:8515/api/Product/CheckAvailability', products.map(product => ({
                 productId: product.idProduct,
                 quantity: product.orderQuantity
@@ -140,7 +131,7 @@ const PendingInvoices = () => {
                             <TableRow key={invoice.idInvoice}>
                                 <TableCell>{invoice.idInvoice}</TableCell>
                                 <TableCell>{new Date(invoice.issueDate).toLocaleString()}</TableCell>
-                                <TableCell>{stores.find(s => s.idStore === invoice.idStore)?.name || "N/A"}</TableCell>
+                                <TableCell>{invoice.storeName || "N/A"}</TableCell>
                                 <TableCell>
                                     <Select
                                         value={invoice.selectedWarehouse || ''}
