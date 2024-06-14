@@ -29,7 +29,6 @@ const mobileFields = [
 
 function Mobiles() {
   const [mobiles, setMobiles] = useState([]);
-  const [mobileAssignments, setMobileAssignments] = useState([]);
   const [filteredMobiles, setFilteredMobiles] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -45,27 +44,25 @@ function Mobiles() {
 
   useEffect(() => {
     fetchData();
-    fetchAssignments();
   }, []);
 
   const fetchData = async () => {
     try {
       const response = await fetch('http://localhost:8515/api/Mobile');
       const data = await response.json();
-      setMobiles(data);
-      setFilteredMobiles(data);
+      const enrichedData = await Promise.all(data.map(async (mobile) => {
+        const assignmentResponse = await fetch(`http://localhost:8515/api/MobileDriver/GetDriverAndAssignmentType/${mobile.phoneNumber}`);
+        const assignmentData = assignmentResponse.ok ? await assignmentResponse.json() : null;
+        return {
+          ...mobile,
+          driverName: assignmentData ? assignmentData.driverName : 'No Driver',
+          assignmentType: assignmentData ? assignmentData.assignmentType : 'unassigned',
+        };
+      }));
+      setMobiles(enrichedData);
+      setFilteredMobiles(enrichedData);
     } catch (error) {
       console.error('Error fetching mobiles:', error);
-    }
-  };
-
-  const fetchAssignments = async () => {
-    try {
-      const response = await fetch('http://localhost:8515/api/MobileDriver/GetMobileAssignments');
-      const data = await response.json();
-      setMobileAssignments(data);
-    } catch (error) {
-      console.error('Error fetching mobile assignments:', error);
     }
   };
 
@@ -183,16 +180,6 @@ function Mobiles() {
     setConfirmDeleteOpen(false);
   };
 
-  const getAssignmentType = (phoneNumber) => {
-    const assignment = mobileAssignments.find(a => a.phoneNumber === phoneNumber);
-    return assignment ? assignment.assignmentType : 'unassigned';
-  };
-
-  const getDriverName = (phoneNumber) => {
-    const assignment = mobileAssignments.find(a => a.phoneNumber === phoneNumber);
-    return assignment ? assignment.driverName : 'No Driver';
-  };
-
   const getDisplayHeaders = () => {
     return {
       idMobile: 'ID',
@@ -200,18 +187,9 @@ function Mobiles() {
       brand: 'Brand',
       model: 'Model',
       imei: 'IMEI',
-      assignmentType: 'Assignment'
+      driverName: 'Driver Name',
+      assignmentType: 'Assignment Type'
     };
-  };
-
-  const enrichMobilesWithAssignments = () => {
-    return filteredMobiles.map(mobile => {
-      return {
-        ...mobile,
-        assignmentType: getAssignmentType(mobile.phoneNumber),
-        driverName: getDriverName(mobile.phoneNumber)
-      };
-    });
   };
 
   return (
@@ -242,19 +220,13 @@ function Mobiles() {
               </TableHead>
               <TableBody>
                 {(rowsPerPage > 0
-                  ? enrichMobilesWithAssignments().slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                  : enrichMobilesWithAssignments()
+                  ? filteredMobiles.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                  : filteredMobiles
                 ).map((item) => (
                   <TableRow key={item.idMobile}>
                     {Object.keys(getDisplayHeaders()).map((header) => (
                       <TableCell key={`${item.idMobile}-${header}`}>
-                        {header === 'assignmentType' ? (
-                          item.assignmentType
-                        ) : header === 'driverName' ? (
-                          item.driverName
-                        ) : (
-                          item[header]
-                        )}
+                        {item[header]}
                       </TableCell>
                     ))}
                     <TableCell>

@@ -1,149 +1,340 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TextField, MenuItem } from '@mui/material';
-import axios from 'axios';
-import AddVehicleAssignment from '../../components/AddVehicleAssignment';
-import EditVehicleAssignment from '../../components/EditVehicleAssignment';
+import {
+  Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper,
+  Button, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, FormControl, InputLabel, TextField
+} from '@mui/material';
+import FilterBar from '../../components/FilterBar';
+import Alerts from '../../components/Alerts';
+import ViewItemPopup from '../../components/ViewItemPopup';
 
 const AssignVehicle = () => {
-    const [assignments, setAssignments] = useState([]);
-    const [drivers, setDrivers] = useState([]);
-    const [vehicles, setVehicles] = useState([]);
-    const [assignmentTypes, setAssignmentTypes] = useState([]);
-    const [searchText, setSearchText] = useState('');
-    const [showAddDialog, setShowAddDialog] = useState(false);
-    const [editAssignment, setEditAssignment] = useState(null);
+  const [assignments, setAssignments] = useState([]);
+  const [drivers, setDrivers] = useState([]);
+  const [unassignedVehicles, setUnassignedVehicles] = useState([]);
+  const [assignmentTypes, setAssignmentTypes] = useState([]);
+  const [filteredAssignments, setFilteredAssignments] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [alertOpen, setAlertOpen] = useState(false);
+  const [alertMessage, setAlertMessage] = useState('');
+  const [alertSeverity, setAlertSeverity] = useState('success');
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState(null);
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false);
 
-    useEffect(() => {
-        fetchData();
-    }, []);
+  useEffect(() => {
+    fetchAssignments();
+    fetchDrivers();
+    fetchUnassignedVehicles();
+    fetchAssignmentTypes();
+  }, []);
 
-    const fetchData = async () => {
-        try {
-            const [assignmentsResponse, driversResponse, vehiclesResponse, assignmentTypesResponse] = await Promise.all([
-                axios.get('http://localhost:8515/api/VehicleDriver/GetAssignments'),
-                axios.get('http://localhost:8515/api/Drivers/GetDriversWithName'),
-                axios.get('http://localhost:8515/api/Vehicles/GetUnassignedVehicles'),
-                axios.get('http://localhost:8515/api/AssignmentType/GetAssignmentTypes')
-            ]);
+  const fetchAssignments = async () => {
+    try {
+      const response = await fetch('http://localhost:8515/api/VehicleDriver/GetVehicleAssignments');
+      const data = await response.json();
+      setAssignments(data);
+      setFilteredAssignments(data);
+    } catch (error) {
+      console.error('Error fetching assignments:', error);
+    }
+  };
 
-            setAssignments(assignmentsResponse.data);
-            setDrivers(driversResponse.data);
-            setVehicles(vehiclesResponse.data);
-            setAssignmentTypes(assignmentTypesResponse.data);
-        } catch (error) {
-            console.error('Error fetching data:', error);
-        }
-    };
+  const fetchDrivers = async () => {
+    try {
+      const response = await fetch('http://localhost:8515/api/VehicleDriver/GetDriversWithName');
+      const data = await response.json();
+      setDrivers(data);
+    } catch (error) {
+      console.error('Error fetching drivers:', error);
+    }
+  };
 
-    const handleSearchChange = (event) => {
-        const newSearchText = event.target.value;
-        setSearchText(newSearchText);
-        const filteredResult = assignments.filter((assignment) => {
-            return Object.values(assignment).some((value) =>
-                typeof value === 'string' && value.toLowerCase().includes(newSearchText.toLowerCase())
-            );
-        });
-        setAssignments(filteredResult);
-    };
+  const fetchUnassignedVehicles = async () => {
+    try {
+      const response = await fetch('http://localhost:8515/api/VehicleDriver/GetUnassignedVehicles');
+      const data = await response.json();
+      setUnassignedVehicles(data);
+    } catch (error) {
+      console.error('Error fetching unassigned vehicles:', error);
+    }
+  };
 
-    const handleAddAssignment = async (formData) => {
-        try {
-            const response = await axios.post('http://localhost:8515/api/VehicleDriver/AddAssignment', formData);
-            if (response.status === 200) {
-                fetchData();
-                setShowAddDialog(false);
-            }
-        } catch (error) {
-            console.error('Error adding assignment:', error);
-        }
-    };
+  const fetchAssignmentTypes = async () => {
+    try {
+      const response = await fetch('http://localhost:8515/api/VehicleDriver/GetAssignmentTypes');
+      const data = await response.json();
+      setAssignmentTypes(data);
+    } catch (error) {
+      console.error('Error fetching assignment types:', error);
+    }
+  };
 
-    const handleEditAssignment = async (id, formData) => {
-        try {
-            const response = await axios.put(`http://localhost:8515/api/VehicleDriver/EditAssignment/${id}`, formData);
-            if (response.status === 200) {
-                fetchData();
-                setEditAssignment(null);
-            }
-        } catch (error) {
-            console.error('Error editing assignment:', error);
-        }
-    };
+  const handleSearchChange = (newSearchText) => {
+    setSearchText(newSearchText);
+    const filteredResult = assignments.filter((assignment) => {
+      return Object.values(assignment).some((value) =>
+        typeof value === 'string' && value.toLowerCase().includes(newSearchText.toLowerCase())
+      );
+    });
+    setFilteredAssignments(filteredResult);
+  };
 
-    const handleDeleteAssignment = async (id) => {
-        try {
-            const response = await axios.delete(`http://localhost:8515/api/VehicleDriver/DeleteAssignment/${id}`);
-            if (response.status === 200) {
-                fetchData();
-            }
-        } catch (error) {
-            console.error('Error deleting assignment:', error);
-        }
-    };
+  const handleAddItem = async (formData) => {
+    try {
+      const response = await fetch('http://localhost:8515/api/VehicleDriver/AddVehicleAssignment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to add assignment');
+      }
+      setAlertMessage('Assignment added successfully!');
+      setAlertSeverity('success');
+      fetchAssignments();
+    } catch (error) {
+      setAlertMessage('Error adding assignment.');
+      setAlertSeverity('error');
+      console.error('Error adding assignment:', error);
+    } finally {
+      setAlertOpen(true);
+    }
+  };
 
-    return (
-        <div>
-            <h2>Assign Vehicles</h2>
-            <TextField
-                label="Search"
-                value={searchText}
-                onChange={handleSearchChange}
-                fullWidth
-                margin="normal"
-            />
-            <Button variant="contained" color="primary" onClick={() => setShowAddDialog(true)}>
-                Add
-            </Button>
-            <TableContainer component={Paper}>
-                <Table>
-                    <TableHead>
-                        <TableRow>
-                            <TableCell>Driver Name</TableCell>
-                            <TableCell>Vehicle Registration</TableCell>
-                            <TableCell>Assignment Start Date</TableCell>
-                            <TableCell>Assignment End Date</TableCell>
-                            <TableCell>Assignment Type</TableCell>
-                            <TableCell>Actions</TableCell>
-                        </TableRow>
-                    </TableHead>
-                    <TableBody>
-                        {assignments.map((assignment) => (
-                            <TableRow key={assignment.idVehicleDriver}>
-                                <TableCell>{assignment.driverName}</TableCell>
-                                <TableCell>{assignment.vehicleRegistration}</TableCell>
-                                <TableCell>{new Date(assignment.assignmentStartDate).toLocaleDateString()}</TableCell>
-                                <TableCell>{new Date(assignment.assignmentEndDate).toLocaleDateString()}</TableCell>
-                                <TableCell>{assignment.assignmentType}</TableCell>
-                                <TableCell>
-                                    <Button onClick={() => setEditAssignment(assignment)}>Edit</Button>
-                                    <Button onClick={() => handleDeleteAssignment(assignment.idVehicleDriver)}>Delete</Button>
-                                </TableCell>
-                            </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
-            </TableContainer>
-            {showAddDialog && (
-                <AddVehicleAssignment
-                    onAdd={handleAddAssignment}
-                    onClose={() => setShowAddDialog(false)}
-                    drivers={drivers}
-                    vehicles={vehicles}
-                    assignmentTypes={assignmentTypes}
-                />
+  const handleEditItem = async (formData) => {
+    try {
+      const response = await fetch(`http://localhost:8515/api/VehicleDriver/EditVehicleAssignment/${formData.idVehicleDriver}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to update assignment');
+      }
+      setAlertMessage('Assignment updated successfully!');
+      setAlertSeverity('success');
+      fetchAssignments();
+    } catch (error) {
+      setAlertMessage('Error updating assignment.');
+      setAlertSeverity('error');
+      console.error('Error updating assignment:', error);
+    } finally {
+      setAlertOpen(true);
+    }
+  };
+
+  const handleDeleteItemClick = async (item) => {
+    try {
+      setAssignmentToDelete(item);
+      setIsConfirmDialogOpen(true);
+    } catch (error) {
+      setAlertMessage('Error deleting assignment.');
+      setAlertSeverity('error');
+      console.error('Error deleting assignment:', error);
+    } finally {
+      setAlertOpen(true);
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      const response = await fetch(`http://localhost:8515/api/VehicleDriver/DeleteVehicleAssignment/${assignmentToDelete.idVehicleDriver}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to delete assignment');
+      }
+      setAlertMessage('Assignment deleted successfully!');
+      setAlertSeverity('success');
+      fetchAssignments();
+    } catch (error) {
+      setAlertMessage('Error deleting assignment.');
+      setAlertSeverity('error');
+      console.error('Error deleting assignment:', error);
+    } finally {
+      setAlertOpen(true);
+      setIsConfirmDialogOpen(false);
+    }
+  };
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
+  };
+
+  const handleViewItem = (assignment) => {
+    setSelectedAssignment(assignment);
+    setIsViewDialogOpen(true);
+  };
+
+  const handleViewDialogClose = () => {
+    setIsViewDialogOpen(false);
+    setSelectedAssignment(null);
+  };
+
+  const handleConfirmDialogClose = () => {
+    setIsConfirmDialogOpen(false);
+    setAssignmentToDelete(null);
+  };
+
+  return (
+    <div>
+      <h2>Vehicle Assignments</h2>
+      <FilterBar onSearchChange={handleSearchChange} />
+      <Button onClick={() => setShowAddDialog(true)}>Add Assignment</Button>
+      {showAddDialog && (
+        <AddEditItem
+          onSave={handleAddItem}
+          onClose={() => setShowAddDialog(false)}
+          item={null}
+          fields={[
+            { name: 'driverName', label: 'Driver', type: 'select', required: true, options: drivers.map(driver => ({ value: driver.fullName, label: driver.fullName })) },
+            { name: 'vehicleRegistration', label: 'Vehicle Registration', type: 'select', required: true, options: unassignedVehicles.map(vehicle => ({ value: vehicle.registration, label: vehicle.registration })) },
+            { name: 'assignmentStartDate', label: 'Assignment Start Date', type: 'date', required: true },
+            { name: 'assignmentEndDate', label: 'Assignment End Date', type: 'date', required: true },
+            { name: 'assignmentType', label: 'Assignment Type', type: 'select', required: true, options: assignmentTypes.map(type => ({ value: type.description, label: type.description })) },
+            { name: 'note', label: 'Note', type: 'text', required: false }
+          ]}
+        />
+      )}
+      {selectedAssignment && (
+        <AddEditItem
+          onSave={handleEditItem}
+          onClose={() => setSelectedAssignment(null)}
+          item={selectedAssignment}
+          fields={[
+            { name: 'driverName', label: 'Driver', type: 'select', required: true, options: drivers.map(driver => ({ value: driver.fullName, label: driver.fullName })) },
+            { name: 'vehicleRegistration', label: 'Vehicle Registration', type: 'select', required: true, options: unassignedVehicles.map(vehicle => ({ value: vehicle.registration, label: vehicle.registration })) },
+            { name: 'assignmentStartDate', label: 'Assignment Start Date', type: 'date', required: true },
+            { name: 'assignmentEndDate', label: 'Assignment End Date', type: 'date', required: true },
+            { name: 'assignmentType', label: 'Assignment Type', type: 'select', required: true, options: assignmentTypes.map(type => ({ value: type.description, label: type.description })) },
+            { name: 'note', label: 'Note', type: 'text', required: false }
+          ]}
+        />
+      )}
+      <TableContainer component={Paper}>
+        <Table stickyHeader aria-label="assignments table">
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>Driver Name</TableCell>
+              <TableCell>Vehicle Registration</TableCell>
+              <TableCell>Assignment Start Date</TableCell>
+              <TableCell>Assignment End Date</TableCell>
+              <TableCell>Assignment Type</TableCell>
+              <TableCell>Actions</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {filteredAssignments.map((assignment) => (
+              <TableRow key={assignment.idVehicleDriver}>
+                <TableCell>{assignment.idVehicleDriver}</TableCell>
+                <TableCell>{assignment.driverName}</TableCell>
+                <TableCell>{assignment.vehicleRegistration}</TableCell>
+                <TableCell>{assignment.assignmentStartDate}</TableCell>
+                <TableCell>{assignment.assignmentEndDate === "9999-12-31T00:00:00" ? "/" : assignment.assignmentEndDate}</TableCell>
+                <TableCell>{assignment.assignmentType}</TableCell>
+                <TableCell>
+                  <Button onClick={() => handleViewItem(assignment)}>View</Button>
+                  <Button onClick={() => setSelectedAssignment(assignment)}>Edit</Button>
+                  <Button onClick={() => handleDeleteItemClick(assignment)}>Delete</Button>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+      <Alerts open={alertOpen} message={alertMessage} severity={alertSeverity} onClose={handleAlertClose} />
+      {isViewDialogOpen && (
+        <ViewItemPopup
+          item={selectedAssignment}
+          onClose={handleViewDialogClose}
+        />
+      )}
+      <Dialog open={isConfirmDialogOpen} onClose={handleConfirmDialogClose}>
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>Are you sure you want to delete this assignment?</DialogContent>
+        <DialogActions>
+          <Button onClick={handleConfirmDialogClose}>Cancel</Button>
+          <Button onClick={handleConfirmDelete}>Delete</Button>
+        </DialogActions>
+      </Dialog>
+    </div>
+  );
+};
+
+const AddEditItem = ({ onSave, onClose, item, fields }) => {
+  const [formData, setFormData] = useState({});
+
+  useEffect(() => {
+    if (item) {
+      setFormData(item);
+    }
+  }, [item]);
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prevFormData) => ({
+      ...prevFormData,
+      [name]: value,
+    }));
+  };
+
+  const handleSave = () => {
+    onSave(formData);
+    onClose();
+  };
+
+  return (
+    <Dialog open={true} onClose={onClose}>
+      <DialogTitle>{item ? 'Edit Assignment' : 'Add Assignment'}</DialogTitle>
+      <DialogContent>
+        {fields.map((field) => (
+          <FormControl key={field.name} fullWidth margin="normal">
+            {field.type === 'select' ? (
+              <>
+                <InputLabel>{field.label}</InputLabel>
+                <Select
+                  name={field.name}
+                  value={formData[field.name] || ''}
+                  onChange={handleChange}
+                  required={field.required}
+                >
+                  {field.options.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </>
+            ) : (
+              <TextField
+                name={field.name}
+                label={field.label}
+                type={field.type}
+                value={formData[field.name] || ''}
+                onChange={handleChange}
+                required={field.required}
+                InputLabelProps={field.type === 'date' ? { shrink: true } : {}}
+              />
             )}
-            {editAssignment && (
-                <EditVehicleAssignment
-                    assignment={editAssignment}
-                    onSave={handleEditAssignment}
-                    onClose={() => setEditAssignment(null)}
-                    drivers={drivers}
-                    vehicles={vehicles}
-                    assignmentTypes={assignmentTypes}
-                />
-            )}
-        </div>
-    );
+          </FormControl>
+        ))}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSave}>Save</Button>
+      </DialogActions>
+    </Dialog>
+  );
 };
 
 export default AssignVehicle;

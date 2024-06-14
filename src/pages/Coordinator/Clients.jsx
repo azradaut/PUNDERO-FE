@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import { Button, Dialog, DialogTitle, DialogContent, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
 import axios from 'axios';
 import AddAccount from '../../components/AddAccount';
 import EditAccount from '../../components/EditAccount';
@@ -40,8 +40,8 @@ const Clients = () => {
         setIsDialogOpen(true);
     };
 
-    const handleViewClient = (clientId) => {
-        setSelectedClient(clientId);
+    const handleViewClient = (accountId) => {
+        setSelectedClient(accountId);
         setIsViewDialogOpen(true);
     };
 
@@ -119,12 +119,14 @@ const Clients = () => {
                             accountId={selectedClient.idAccount}
                             onAccountUpdated={handleClientUpdated}
                             onClose={handleDialogClose}
-                            additionalFields={[{ name: 'store', label: 'Store' }]}
+                            additionalFields={[]}
                         />
                     ) : (
                         <AddAccount
+                            accountType="Client"
                             onAccountAdded={handleClientUpdated}
                             onClose={handleDialogClose}
+                            additionalFields={[]}
                         />
                     )}
                 </DialogContent>

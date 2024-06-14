@@ -119,18 +119,7 @@ const EditAccount = ({ accountType, accountId, onAccountUpdated, onClose, additi
                         />
                         {accountType === 'Client' && (
                             <FormControl fullWidth margin="normal">
-                                <InputLabel>Store</InputLabel>
-                                <Select
-                                    name="store"
-                                    value={accountData.store || ''}
-                                    onChange={handleChange}
-                                >
-                                    {stores.map((store) => (
-                                        <MenuItem key={store.idStore} value={store.name}>
-                                            {store.name}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
+                                
                             </FormControl>
                         )}
                         {accountType === 'Driver' && (

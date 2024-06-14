@@ -63,7 +63,7 @@ function Vehicles() {
 
   const fetchAssignments = async () => {
     try {
-      const response = await fetch('http://localhost:8515/api/VehicleDriver/GetAssignments');
+      const response = await fetch('http://localhost:8515/api/VehicleDriver/GetVehicleAssignments');
       const data = await response.json();
       setVehicleAssignments(data);
     } catch (error) {
@@ -109,7 +109,7 @@ function Vehicles() {
 
   const handleEditItem = async (formData) => {
     try {
-      const response = await fetch(`http://localhost:8515/api/Vehicle/Update/${formData.idVehicle}`, {
+      const response = await fetch(`http://localhost:8515/api/Vehicle/${formData.idVehicle}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -134,7 +134,7 @@ function Vehicles() {
 
   const handleDeleteItemClick = async (item) => {
     try {
-      const response = await fetch(`http://localhost:8515/api/Vehicle/${item.idVehicle}`, {
+      const response = await fetch(`http://localhost:8515/api/Vehicle/DeleteVehicle/${item.idVehicle}`, {
         method: 'DELETE',
       });
       if (!response.ok) {
@@ -165,10 +165,11 @@ function Vehicles() {
     setPage(0);
   };
 
-  const handleViewItemClick = (item) => {
+  const handleViewItemClick = async (item) => {
     const enrichedVehicle = {
       ...item,
       driverName: getDriverName(item.registration),
+      assignmentType: await getAssignmentType(item.registration)
     };
     setViewVehicle(enrichedVehicle);
   };
@@ -192,6 +193,20 @@ function Vehicles() {
   const getDriverName = (registration) => {
     const assignment = vehicleAssignments.find(a => a.vehicleRegistration === registration);
     return assignment ? assignment.driverName : 'No Driver';
+  };
+
+  const getAssignmentType = async (registration) => {
+    try {
+      const response = await fetch(`http://localhost:8515/api/VehicleDriver/GetDriverAndAssignmentType/${registration}`);
+      if (!response.ok) {
+        return 'unassigned';
+      }
+      const data = await response.json();
+      return data.assignmentType;
+    } catch (error) {
+      console.error('Error fetching assignment type:', error);
+      return 'unassigned';
+    }
   };
 
   const displayHeaders = {
