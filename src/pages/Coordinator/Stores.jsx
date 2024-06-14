@@ -1,20 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination, Dialog, DialogTitle, DialogContent, DialogActions } from '@mui/material';
+import { Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, TablePagination } from '@mui/material';
 import FilterBar from '../../components/FilterBar';
 import AddItem from '../../components/AddItem';
 import EditItem from '../../components/EditItem';
 import Alerts from '../../components/Alerts';
 import ViewItemPopup from '../../components/ViewItemPopup';
+import axios from 'axios';
 
 const storeFields = [
   { name: 'name', label: 'Name', required: true, maxLength: 50 },
   { name: 'address', label: 'Address', required: true, maxLength: 100 },
   { name: 'longitude', label: 'Longitude', required: true, type: 'number' },
-  { name: 'latitude', label: 'Latitude', required: true, type: 'number' }
+  { name: 'latitude', label: 'Latitude', required: true, type: 'number' },
+  { name: 'clientName', label: 'Client', type: 'select', options: [] }
 ];
 
 function Stores() {
   const [stores, setStores] = useState([]);
+  const [clients, setClients] = useState([]);
   const [filteredStores, setFilteredStores] = useState([]);
   const [searchText, setSearchText] = useState('');
   const [showAddDialog, setShowAddDialog] = useState(false);
@@ -28,6 +31,7 @@ function Stores() {
 
   useEffect(() => {
     fetchData();
+    fetchClients();
   }, []);
 
   const fetchData = async () => {
@@ -40,6 +44,22 @@ function Stores() {
       console.error('Error fetching stores:', error);
     }
   };
+
+  const fetchClients = async () => {
+    try {
+      const response = await axios.get('http://localhost:8515/api/Client/GetClients');
+      setClients(response.data);
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
+  };
+
+  useEffect(() => {
+    storeFields.find(field => field.name === 'clientName').options = clients.map(client => ({
+      value: `${client.firstName} ${client.lastName}`,
+      label: `${client.firstName} ${client.lastName}`
+    }));
+  }, [clients]);
 
   const handleSearchChange = (newSearchText) => {
     setSearchText(newSearchText);
@@ -140,7 +160,8 @@ function Stores() {
   const displayHeaders = {
     idStore: 'ID',
     name: 'Name',
-    address: 'Address'
+    address: 'Address',
+    clientName: 'Client'
   };
 
   return (
@@ -149,13 +170,28 @@ function Stores() {
       <FilterBar onSearchChange={handleSearchChange} />
       <Button onClick={() => setShowAddDialog(true)}>Add</Button>
       {showAddDialog && (
-        <AddItem onAdd={handleAddItem} onClose={() => setShowAddDialog(false)} fields={storeFields} />
+        <AddItem
+          onAdd={handleAddItem}
+          onClose={() => setShowAddDialog(false)}
+          fields={storeFields}
+        />
       )}
       {selectedStore && (
-        <EditItem item={selectedStore} onSave={handleEditItem} onClose={() => setSelectedStore(null)} fields={storeFields} />
+        <EditItem
+          item={selectedStore}
+          onSave={handleEditItem}
+          onClose={() => setSelectedStore(null)}
+          fields={storeFields}
+        />
       )}
       {viewStore && (
-        <ViewItemPopup item={viewStore} onClose={() => setViewStore(null)} />
+        <ViewItemPopup
+          item={viewStore}
+          onClose={() => setViewStore(null)}
+          additionalFields={[
+            { name: 'clientName', label: 'Client' }
+          ]}
+        />
       )}
       {filteredStores.length > 0 ? (
         <TableContainer component={Paper}>

@@ -1,19 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
+import axios from 'axios';
 
 function EditItem({ item, onSave, onClose, fields }) {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
-  const [isSaving, setIsSaving] = useState(false); // Add this state to prevent multiple calls
+  const [clients, setClients] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
     if (item && !isInitialized) {
       setFormData(item);
       setIsInitialized(true);
-      console.log("EditItem - formData set: ", item);
     }
   }, [item, isInitialized]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get('http://localhost:8515/api/Client/GetClients');
+        setClients(response.data);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      }
+    };
+    fetchClients();
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -31,15 +44,12 @@ function EditItem({ item, onSave, onClose, fields }) {
   };
 
   const handleSave = async () => {
-    if (isSaving) return; // Prevent multiple calls
+    if (isSaving) return;
     setIsSaving(true);
-    console.log("EditItem - handleSave called");
     try {
       await onSave(formData);
-      console.log("EditItem - onSave completed");
-      onClose(); // Ensure the dialog is closed after successful save
+      onClose();
     } catch (error) {
-      console.log("EditItem - error: ", error);
       if (error && error.data) {
         const validationErrors = error.data.errors || {};
         setErrors(validationErrors);
@@ -47,12 +57,11 @@ function EditItem({ item, onSave, onClose, fields }) {
         console.error("Unexpected error:", error);
       }
     } finally {
-      setIsSaving(false); // Reset saving state
+      setIsSaving(false);
     }
   };
 
   const handleDialogClose = () => {
-    console.log("EditItem - handleDialogClose called");
     onClose();
   };
 
@@ -61,20 +70,41 @@ function EditItem({ item, onSave, onClose, fields }) {
       <DialogTitle>Edit Item</DialogTitle>
       <DialogContent>
         {fields.map((field) => (
-          <TextField
-            key={field.name}
-            name={field.name}
-            label={field.label}
-            value={formData[field.name] || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            error={!!errors[field.name]}
-            helperText={errors[field.name] ? errors[field.name][0] : ''}
-            type={field.type || 'text'}
-            InputLabelProps={{ shrink: true }}
-            placeholder={field.placeholder || ''}
-          />
+          field.type === 'select' ? (
+            <TextField
+              key={field.name}
+              select
+              name={field.name}
+              label={field.label}
+              value={formData[field.name] || ''}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              error={!!errors[field.name]}
+              helperText={errors[field.name]}
+              InputLabelProps={{ shrink: true }}
+            >
+              {clients.map(client => (
+                <MenuItem key={client.idClient} value={`${client.firstName} ${client.lastName}`}>
+                  {client.firstName} {client.lastName}
+                </MenuItem>
+              ))}
+            </TextField>
+          ) : (
+            <TextField
+              key={field.name}
+              name={field.name}
+              label={field.label}
+              value={formData[field.name] || ''}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              error={!!errors[field.name]}
+              helperText={errors[field.name]}
+              type={field.type || 'text'}
+              InputLabelProps={{ shrink: true }}
+            />
+          )
         ))}
       </DialogContent>
       <DialogActions>
