@@ -1,26 +1,26 @@
-import React, { useState} from 'react';
+import React, { useState } from 'react';
 import {
   BrowserRouter as Router,
   Route,
   Routes,
   Outlet
-} from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
+} from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
 import Accounts from './pages/Coordinator/Accounts';
-import Vehicles from "./pages/Coordinator/Vehicles";
-import MapCoordinator from "./pages/Coordinator/MapCoordinator";
+import Vehicles from './pages/Coordinator/Vehicles';
+import MapCoordinator from './pages/Coordinator/MapCoordinator';
 import CoordinatorDashboard from './pages/Coordinator/CoordinatorDashboard';
 import ClientDashboard from './pages/Client/ClientDashboard';
-import Products from './pages/Client/Products'; 
-import ReviewOrder from './pages/Client/ReviewOrder'; 
-import Notifications from './pages/Notifications'; 
-import PendingInvoices from './pages/Coordinator/PendingInvoices'; 
-import Invoices from './pages/Coordinator/Invoices'; 
+import Products from './pages/Client/Products';
+import ReviewOrder from './pages/Client/ReviewOrder';
+import Notifications from './pages/Notifications';
+import PendingInvoices from './pages/Coordinator/PendingInvoices';
+import Invoices from './pages/Coordinator/Invoices';
 import ProtectedRoute from './components/ProtectedRoute';
 import CoordinatorNavbar from './components/CoordinatorNavbar';
 import ClientNavbar from './components/ClientNavbar';
-import MainContentLayout from './components/MainContentLayout'; // Import the new layout component
-import { NotificationProvider } from './contexts/NotificationContext'; 
+import MainContentLayout from './components/MainContentLayout';
+import { NotificationProvider } from './contexts/NotificationContext';
 import Coordinators from './pages/Coordinator/Coordinators';
 import OrderConfirmation from './pages/Client/OrderConfirmation';
 import DeliveredInvoices from './pages/Client/DeliveredInvoices';
@@ -33,6 +33,7 @@ import ClientInvoices from './pages/Client/ClientInvoices';
 import Mobiles from './pages/Coordinator/Mobiles';
 import Stores from './pages/Coordinator/Stores';
 import ProductsCoordiantor from './pages/Coordinator/ProductsCoordiantor';
+import ExportInvoice from './components/ExportInvoice';
 
 const CoordinatorLayout = () => {
   return (
@@ -57,11 +58,10 @@ const ClientLayout = () => {
 };
 
 function App() {
-  const [cart, setCart] = useState([]); // State for managing the cart
-  
+  const [cart, setCart] = useState([]);
 
   return (
-    <NotificationProvider> {/* Wrap the entire app with NotificationProvider */}
+    <NotificationProvider>
       <Router>
         <Routes>
           <Route path="/" element={<LoginPage />} />
@@ -88,7 +88,7 @@ function App() {
             <Route path="drivers" element={<Drivers />} />
             <Route path="assignmobile" element={<AssignMobile />} />
             <Route path="assignvehicle" element={<AssignVehicle />} />
-
+            <Route path="export-invoice/:id" element={<ExportInvoice />} />
           </Route>
           <Route
             path="/client"
@@ -99,19 +99,18 @@ function App() {
             }
           >
             <Route path="dashboard" element={<ClientDashboard />} />
-            <Route path="products" element={<Products cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
-            <Route path="review-order" element={<ReviewOrder cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
+            <Route path="products" element={<Products cart={cart} setCart={setCart} />} />
+            <Route path="review-order" element={<ReviewOrder cart={cart} setCart={setCart} />} />
             <Route path="notifications" element={<Notifications />} />
             <Route path="client-invoices" element={<ClientInvoices />} />
             <Route path="delivered-invoices" element={<DeliveredInvoices />} />
             <Route path="client-map" element={<ClientMap />} />
-            <Route path="order-confirmation" element={<OrderConfirmation cart={cart} setCart={setCart} />} /> {/* Pass cart and setCart as props */}
+            <Route path="order-confirmation" element={<OrderConfirmation cart={cart} setCart={setCart} />} />
           </Route>
         </Routes>
-       </Router>
+      </Router>
     </NotificationProvider>
-          );
-
-};
+  );
+}
 
 export default App;

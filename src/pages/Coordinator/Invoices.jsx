@@ -2,19 +2,28 @@ import React, { useState, useEffect } from 'react';
 import { Table, TableHead, TableBody, TableRow, TableCell, TableContainer, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TablePagination } from '@mui/material';
 import FilterBar from '../../components/FilterBar';
 import axios from 'axios';
+import ExportInvoice from '../../components/ExportInvoice';
 
 function Invoices() {
   const [invoices, setInvoices] = useState([]);
   const [filteredInvoices, setFilteredInvoices] = useState([]);
   const [statusFilter, setStatusFilter] = useState('');
+  const [selectedInvoiceId, setSelectedInvoiceId] = useState(null);
   const [selectedInvoice, setSelectedInvoice] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isExportDialogOpen, setIsExportDialogOpen] = useState(false);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (selectedInvoiceId !== null) {
+      fetchInvoiceData(selectedInvoiceId);
+    }
+  }, [selectedInvoiceId]);
 
   const fetchData = async () => {
     try {
@@ -23,6 +32,16 @@ function Invoices() {
       setFilteredInvoices(response.data);
     } catch (error) {
       console.error('Error fetching invoices:', error);
+    }
+  };
+
+  const fetchInvoiceData = async (id) => {
+    console.log('Fetching invoice data for id:', id); // Add this line
+    try {
+      const response = await axios.get(`http://localhost:8515/api/Inv/${id}`);
+      setSelectedInvoice(response.data);
+    } catch (error) {
+      console.error('Error fetching invoice details:', error);
     }
   };
 
@@ -43,18 +62,26 @@ function Invoices() {
     }
   };
 
-  const handleViewInvoice = async (id) => {
-    try {
-      const response = await axios.get(`http://localhost:8515/api/Inv/${id}`);
-      setSelectedInvoice(response.data);
-      setIsDialogOpen(true);
-    } catch (error) {
-      console.error('Error fetching invoice details:', error);
-    }
+  const handleViewInvoice = (id) => {
+    setSelectedInvoiceId(id);
+    setIsDialogOpen(true);
+  };
+
+  const handleExportInvoice = (id) => {
+    console.log('Exporting invoice with id:', id); // Add this line
+    setSelectedInvoiceId(id);
+    setIsExportDialogOpen(true);
   };
 
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
+    setSelectedInvoiceId(null);
+    setSelectedInvoice(null);
+  };
+
+  const handleCloseExportDialog = () => {
+    setIsExportDialogOpen(false);
+    setSelectedInvoiceId(null);
     setSelectedInvoice(null);
   };
 
@@ -108,6 +135,7 @@ function Invoices() {
                 <TableCell>{invoice.statusName}</TableCell>
                 <TableCell>
                   <Button onClick={() => handleViewInvoice(invoice.idInvoice)}>View</Button>
+                  <Button onClick={() => handleExportInvoice(invoice.idInvoice)}>Export PDF</Button>
                 </TableCell>
               </TableRow>
             ))}
@@ -162,6 +190,15 @@ function Invoices() {
         </DialogContent>
         <DialogActions>
           <Button onClick={handleCloseDialog} color="primary">Close</Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog open={isExportDialogOpen} onClose={handleCloseExportDialog} maxWidth="md" fullWidth>
+        <DialogTitle>Export Invoice</DialogTitle>
+        <DialogContent>
+          {selectedInvoice && <ExportInvoice id={selectedInvoiceId} />}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseExportDialog} color="primary">Close</Button>
         </DialogActions>
       </Dialog>
     </div>
