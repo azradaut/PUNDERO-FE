@@ -1,95 +1,49 @@
-import React from 'react';
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
-import { Button } from '@mui/material';
-import PunderoLogoBlue from '../../images/logo/PunderoLogoBlue.png'
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const Invoice = () => {
-  const exportPdf = () => {
-    const input = document.getElementById('invoice');
-    html2canvas(input).then((canvas) => {
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF();
-      const imgProps = pdf.getImageProperties(imgData);
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('invoice.pdf');
-    });
-  };
+function Accounts() {
+  const [accounts, setAccounts] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://localhost:8515/api/Account/GetAccounts', {
+          headers: {
+            'my-auth-token': token,
+          },
+        });
+        setAccounts(response.data);
+      } catch (error) {
+        setError(error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   return (
-    <div style={{ padding: '20px', backgroundColor: 'white', fontFamily: 'Arial, sans-serif' }}>
-      <Button variant="contained" color="primary" onClick={exportPdf} style={{ marginBottom: '20px' }}>
-        Export as PDF
-      </Button>
-      <div id="invoice" style={{ padding: '40px', margin: '0 auto', maxWidth: '800px', border: '1px solid #ddd', position: 'relative' }}>
-        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
-          <img src={PunderoLogoBlue} alt="Pundero Logo" style={{ width: '150px' }} />
-          <h2 style={{ margin: 0 }}>INVOICE</h2>
-        </header>
-        <section style={{ marginBottom: '40px' }}>
-          <div>
-            <strong>BILLED TO:</strong>
-            <p>Imani Olowe<br />+123-456-7890<br />63 Ivy Road, Hawkville, GA, USA 31036</p>
-          </div>
-          <div>
-            <strong>Invoice No:</strong> 12345<br />
-            <strong>Date:</strong> 16 June 2025
-          </div>
-        </section>
-        <table style={{ width: '100%', marginBottom: '40px', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr>
-              <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', paddingBottom: '8px' }}>Item</th>
-              <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', paddingBottom: '8px' }}>Quantity</th>
-              <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', paddingBottom: '8px' }}>Unit Price</th>
-              <th style={{ borderBottom: '1px solid #ddd', textAlign: 'left', paddingBottom: '8px' }}>Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td style={{ paddingTop: '8px' }}>Eggshell Camisole Top</td>
-              <td style={{ paddingTop: '8px' }}>1</td>
-              <td style={{ paddingTop: '8px' }}>$123</td>
-              <td style={{ paddingTop: '8px' }}>$123</td>
-            </tr>
-            <tr>
-              <td style={{ paddingTop: '8px' }}>Cuban Collar Shirt</td>
-              <td style={{ paddingTop: '8px' }}>2</td>
-              <td style={{ paddingTop: '8px' }}>$127</td>
-              <td style={{ paddingTop: '8px' }}>$254</td>
-            </tr>
-            <tr>
-              <td style={{ paddingTop: '8px' }}>Floral Cotton Dress</td>
-              <td style={{ paddingTop: '8px' }}>1</td>
-              <td style={{ paddingTop: '8px' }}>$123</td>
-              <td style={{ paddingTop: '8px' }}>$123</td>
-            </tr>
-          </tbody>
-        </table>
-        <section style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
-          <div>
-            <strong>Subtotal:</strong> $500<br />
-            <strong>Tax (0%):</strong> $0<br />
-            <strong>Total:</strong> $500
-          </div>
-        </section>
-        <section style={{ marginBottom: '40px' }}>
-          <strong>Assigned Driver:</strong> John Doe<br />
-          <strong>Email:</strong> john.doe@example.com<br />
-          <strong>Phone:</strong> +987-654-3210
-        </section>
-        <section>
-          <p>Thank you!</p>
-        </section>
-        <footer style={{ borderTop: '1px solid #ddd', paddingTop: '20px', marginTop: '40px', textAlign: 'center', position: 'absolute', bottom: '0', width: '100%' }}>
-          <p>PUNDERO, Adresa: Zmaja od Bosne 8, Sarajevo 71000<br />
-            Telefon: 033 565-200, Email: info@pundero.ba</p>
-        </footer>
-      </div>
+    <div>
+      {isLoading && <p>Loading accounts...</p>}
+      {error && <p>Error fetching accounts: {error.message}</p>}
+      {!isLoading && !error && (
+        <ul>
+          {accounts.map((account) => (
+            <li key={account.idAccount}>
+              {account.firstName} {account.lastName} ({account.email})
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
-};
+}
 
-export default Invoice;
+export default Accounts;
