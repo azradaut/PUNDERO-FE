@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+/*import React, { useState } from 'react';
 import {
   Table,
   TableHead,
@@ -17,7 +17,7 @@ import {
 import ViewItemPopup from './ViewItemPopup';
 import EditItem from './EditItem';
 
-function ItemTable({ items, headers, onDelete, onEdit, fields, customActions }) {
+function ItemTable({ items = [], headers = [], displayHeaders = {}, onDelete, onEdit, onView, fields, customActions }) {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [viewItem, setViewItem] = useState(null);
@@ -36,11 +36,17 @@ function ItemTable({ items, headers, onDelete, onEdit, fields, customActions }) 
 
   const handleViewItemClick = (item) => {
     setViewItem(item);
+    if (onView) {
+      onView(item);
+    }
   };
 
   const handleEditItemClick = (item) => {
     console.log("Edit item clicked: ", item);
     setEditItem(item);
+    if (onEdit) {
+      onEdit(item);
+    }
   };
 
   const handleDeleteItemButtonClick = (item) => {
@@ -68,6 +74,10 @@ function ItemTable({ items, headers, onDelete, onEdit, fields, customActions }) 
     return path.split('.').reduce((obj, key) => (obj && obj[key] !== 'undefined' ? obj[key] : ''), item);
   };
 
+  const getIdKey = (item) => {
+    return item.idVehicle ? 'idVehicle' : item.idProduct ? 'idProduct' : 'id';
+  };
+
   return (
     <div style={{ overflowX: 'auto' }}>
       <TableContainer component={Paper}>
@@ -75,7 +85,7 @@ function ItemTable({ items, headers, onDelete, onEdit, fields, customActions }) 
           <TableHead>
             <TableRow>
               {headers.map((header) => (
-                <TableCell key={header}>{header}</TableCell>
+                <TableCell key={header}>{displayHeaders[header] || header}</TableCell>
               ))}
               <TableCell>Actions</TableCell>
             </TableRow>
@@ -85,58 +95,59 @@ function ItemTable({ items, headers, onDelete, onEdit, fields, customActions }) 
               ? items.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               : items
             ).map((item) => (
-              <TableRow key={item.idVehicle}>
-                {headers.map((header) => (
-                  <TableCell key={`${item.idVehicle}-${header}`}>
-                    {getNestedValue(item, header)}
-                  </TableCell>
-                ))}
-                <TableCell>
-                  {customActions ? (
-                    customActions(item)
-                  ) : (
-                    <>
-                      <Button onClick={() => handleViewItemClick(item)}>View</Button>
-                      <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
-                      <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
-                    </>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <TablePagination
-        rowsPerPageOptions={[10, 50, 100]}
-        component="div"
-        count={items.length}
-        rowsPerPage={rowsPerPage}
-        page={page}
-        onPageChange={handleChangePage}
-        onRowsPerPageChange={handleChangeRowsPerPage}
-      />
-      <ViewItemPopup item={viewItem} onClose={() => setViewItem(null)} />
-      {editItem && (
-        <EditItem
-          item={editItem}
-          onSave={handleSaveEditItem}
-          onClose={() => setEditItem(null)}
-          fields={fields}
-        />
-      )}
-      <Dialog open={confirmDeleteOpen} onClose={handleCancelDelete}>
-        <DialogTitle>Delete Item</DialogTitle>
-        <DialogContent>
-          <p>Are you sure you want to delete this item?</p>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCancelDelete}>Cancel</Button>
-          <Button onClick={handleConfirmDelete}>Delete</Button>
-        </DialogActions>
-      </Dialog>
-    </div>
-  );
+              <TableRow key={item[getIdKey(item)]}>
+                {
+headers.map((header) => (
+  <TableCell key={`${item[getIdKey(item)]}-${header}`}>
+    {getNestedValue(item, header)}
+  </TableCell>
+))}
+<TableCell>
+  {customActions ? (
+    customActions(item)
+  ) : (
+    <>
+      <Button onClick={() => handleViewItemClick(item)}>View</Button>
+      <Button onClick={() => handleEditItemClick(item)}>Edit</Button>
+      <Button onClick={() => handleDeleteItemButtonClick(item)}>Delete</Button>
+    </>
+  )}
+</TableCell>
+</TableRow>
+))}
+</TableBody>
+</Table>
+</TableContainer>
+<TablePagination
+rowsPerPageOptions={[10, 50, 100]}
+component="div"
+count={items.length}
+rowsPerPage={rowsPerPage}
+page={page}
+onPageChange={handleChangePage}
+onRowsPerPageChange={handleChangeRowsPerPage}
+/>
+<ViewItemPopup item={viewItem} onClose={() => setViewItem(null)} />
+{editItem && (
+<EditItem
+item={editItem}
+onSave={handleSaveEditItem}
+onClose={() => setEditItem(null)}
+fields={fields}
+/>
+)}
+<Dialog open={confirmDeleteOpen} onClose={handleCancelDelete}>
+<DialogTitle>Delete Item</DialogTitle>
+<DialogContent>
+<p>Are you sure you want to delete this item?</p>
+</DialogContent>
+<DialogActions>
+<Button onClick={handleCancelDelete}>Cancel</Button>
+<Button onClick={handleConfirmDelete}>Delete</Button>
+</DialogActions>
+</Dialog>
+</div>
+);
 }
 
-export default ItemTable;
+export default ItemTable; */

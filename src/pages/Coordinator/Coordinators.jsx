@@ -1,100 +1,153 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mui/material';
-import ItemTable from '../../components/ItemTable';
-import FilterBar from '../../components/FilterBar';
-import AddCoordinator from '../../components/AddCoordinator';
+import { Button, Dialog, DialogTitle, DialogContent, DialogActions, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import axios from 'axios';
+import AddAccount from '../../components/AddAccount';
+import EditAccount from '../../components/EditAccount';
+import Alerts from '../../components/Alerts';
 import ViewAccount from '../../components/ViewAccount';
 
-function Coordinators() {
-  const [coordinators, setCoordinators] = useState([]);
-  const [filteredCoordinators, setFilteredCoordinators] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [viewAccount, setViewAccount] = useState(null);
+const Coordinators = () => {
+    const [coordinators, setCoordinators] = useState([]);
+    const [selectedCoordinator, setSelectedCoordinator] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertSeverity, setAlertSeverity] = useState('success');
+    const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    useEffect(() => {
+        fetchCoordinators();
+    }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch('http://localhost:8515/api/Coordinator/GetCoordinators');
-      const data = await response.json();
-      setCoordinators(data);
-      setFilteredCoordinators(data);
-    } catch (error) {
-      console.error('Error fetching coordinators:', error);
-    }
-  };
+    const fetchCoordinators = async () => {
+        try {
+            const response = await axios.get('http://localhost:8515/api/Coordinator/GetCoordinators');
+            setCoordinators(response.data);
+        } catch (error) {
+            console.error('Error fetching coordinators:', error);
+        }
+    };
 
-  const handleSearchChange = (newSearchText) => {
-    setSearchText(newSearchText);
-    const filteredResult = coordinators.filter((coordinator) => {
-      return Object.values(coordinator).some((value) =>
-        typeof value === 'string' && value.toLowerCase().includes(newSearchText.toLowerCase())
-      );
-    });
-    setFilteredCoordinators(filteredResult);
-  };
+    const handleAddCoordinator = () => {
+        setIsEdit(false);
+        setIsDialogOpen(true);
+    };
 
-  const handleAddCoordinator = async (formData) => {
-    try {
-      console.log("Sending Form Data: ", formData);
-      const response = await fetch('http://localhost:8515/api/Coordinator/AddCoordinator', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
-        fetchData();
-        setShowAddDialog(false);
-      } else {
-        const errorData = await response.json();
-        console.error('Error adding coordinator:', errorData);
-      }
-    } catch (error) {
-      console.error('Error adding coordinator:', error);
-    }
-  };
+    const handleEditCoordinator = (coordinator) => {
+        setSelectedCoordinator(coordinator);
+        setIsEdit(true);
+        setIsDialogOpen(true);
+    };
 
-  const handleViewCoordinator = (coordinator) => {
-    setViewAccount(coordinator);
-  };
+    const handleViewCoordinator = (accountId) => {
+        setSelectedCoordinator(accountId);
+        setIsViewDialogOpen(true);
+    };
 
-  return (
-    <div>
-      <h2>Coordinators</h2>
-      <FilterBar onSearchChange={handleSearchChange} />
-      <Button onClick={() => setShowAddDialog(true)}>Add</Button>
-      {filteredCoordinators.length > 0 ? (
-        <ItemTable
-          items={filteredCoordinators}
-          headers={Object.keys(coordinators[0] || {}).map(header =>
-            header === "assignedDriver" ? "assignedDriver.driverName" :
-            header === "assignmentType" ? "assignmentType" : header)}
-          customActions={(item) => (
-            <Button onClick={() => handleViewCoordinator(item)}>View</Button>
-          )}
-        />
-      ) : (
-        <p>No coordinators match the current filters.</p>
-      )}
-      {showAddDialog && (
-        <AddCoordinator
-          onAdd={handleAddCoordinator}
-          onClose={() => setShowAddDialog(false)}
-        />
-      )}
-      {viewAccount && (
-        <ViewAccount
-          account={viewAccount}
-          onClose={() => setViewAccount(null)}
-        />
-      )}
-    </div>
-  );
-}
+    const handleDeleteCoordinator = async (coordinatorId) => {
+        try {
+            await axios.delete(`http://localhost:8515/api/Coordinator/DeleteCoordinator/${coordinatorId}`);
+            fetchCoordinators();
+            setAlertMessage('Coordinator deleted successfully!');
+            setAlertSeverity('success');
+            setAlertOpen(true);
+        } catch (error) {
+            console.error('Error deleting coordinator:', error);
+            setAlertMessage('Error deleting coordinator.');
+            setAlertSeverity('error');
+            setAlertOpen(true);
+        }
+    };
+
+    const handleDialogClose = () => {
+        setIsDialogOpen(false);
+        setSelectedCoordinator(null);
+    };
+
+    const handleCoordinatorUpdated = () => {
+        fetchCoordinators();
+        handleDialogClose();
+        setAlertMessage(isEdit ? 'Coordinator edited successfully!' : 'Coordinator added successfully!');
+        setAlertSeverity('success');
+        setAlertOpen(true);
+    };
+
+    const handleCloseViewDialog = () => {
+        setIsViewDialogOpen(false);
+        setSelectedCoordinator(null);
+    };
+
+    return (
+        <div>
+            <h2>Coordinators</h2>
+            <Button variant="contained" color="primary" onClick={handleAddCoordinator}>
+                Add Coordinator
+            </Button>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Id</TableCell>
+                        <TableCell>Full Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Qualification</TableCell>
+                        <TableCell>Description</TableCell>
+                        <TableCell>Actions</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {coordinators.map((coordinator) => (
+                        <TableRow key={coordinator.idCoordinator}>
+                            <TableCell>{coordinator.idCoordinator}</TableCell>
+                            <TableCell>{`${coordinator.firstName} ${coordinator.lastName}`}</TableCell>
+                            <TableCell>{coordinator.email}</TableCell>
+                            <TableCell>{coordinator.qualification}</TableCell>
+                            <TableCell>{coordinator.description}</TableCell>
+                            <TableCell>
+                                <Button onClick={() => handleViewCoordinator(coordinator.idAccount)}>View</Button>
+                                <Button onClick={() => handleEditCoordinator(coordinator)}>Edit</Button>
+                                <Button onClick={() => handleDeleteCoordinator(coordinator.idCoordinator)}>Delete</Button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+            <Dialog open={isDialogOpen} onClose={handleDialogClose}>
+                <DialogTitle>{isEdit ? 'Edit Coordinator' : 'Add Coordinator'}</DialogTitle>
+                <DialogContent>
+                    {isEdit && selectedCoordinator ? (
+                        <EditAccount
+                            accountType="Coordinator"
+                            accountId={selectedCoordinator.idAccount}
+                            onAccountUpdated={handleCoordinatorUpdated}
+                            onClose={handleDialogClose}
+                            additionalFields={[
+                                { name: 'qualification', label: 'Qualification' },
+                                { name: 'description', label: 'Description' }
+                            ]}
+                        />
+                    ) : (
+                        <AddAccount
+                            accountType="Coordinator"
+                            onAccountAdded={handleCoordinatorUpdated}
+                            onClose={handleDialogClose}
+                            additionalFields={[
+                                { name: 'qualification', label: 'Qualification' },
+                                { name: 'description', label: 'Description' }
+                            ]}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+            {isViewDialogOpen && <ViewAccount accountType="Coordinator" accountId={selectedCoordinator} onClose={handleCloseViewDialog} />}
+            <Alerts
+                open={alertOpen}
+                message={alertMessage}
+                severity={alertSeverity}
+                onClose={() => setAlertOpen(false)}
+            />
+        </div>
+    );
+};
 
 export default Coordinators;

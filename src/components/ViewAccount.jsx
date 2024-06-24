@@ -1,55 +1,206 @@
-import React from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, CardMedia } from '@mui/material';
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField } from '@mui/material';
+import axios from 'axios';
 
-function ViewAccount({ account, onClose }) {
-  const { idCoordinator, idClient, idDriver, firstName, lastName, email, type, image, qualification, description, licenseNumber, licenseCategory, tachographLabel, assignedMobile, assignedVehicle } = account;
+function ViewAccount({ accountId, accountType, onClose }) {
+  const [accountData, setAccountData] = useState(null);
 
-  const getTypeLabel = (type) => {
-    switch (type) {
-      case 'Coordinator':
-        return 'Coordinator';
-      case 'Client':
-        return 'Client';
-      case 'Driver':
-        return 'Driver';
-      default:
-        return 'Unknown';
+  useEffect(() => {
+    fetchAccountData();
+  }, [accountId, accountType]);
+
+  const fetchAccountData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8515/api/${accountType}/Get${accountType}ByIdAccount/${accountId}`);
+      setAccountData(response.data);
+    } catch (error) {
+      console.error(`Error fetching ${accountType.toLowerCase()} data:`, error);
     }
   };
 
-  const imageUrl = image ? `http://localhost:8515/images/profile_images/${image}` : null;
-  console.log("Image URL:", imageUrl); // Log the image URL
+  if (!accountData) {
+    return null;
+  }
 
   return (
-    <Dialog open={true} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Account Details</DialogTitle>
+    <Dialog open={true} onClose={onClose}>
+      <DialogTitle>View {accountType}</DialogTitle>
       <DialogContent>
-        {idCoordinator && <Typography variant="body1"><strong>ID:</strong> {idCoordinator}</Typography>}
-        {idClient && <Typography variant="body1"><strong>ID:</strong> {idClient}</Typography>}
-        {idDriver && <Typography variant="body1"><strong>ID:</strong> {idDriver}</Typography>}
-        <Typography variant="body1"><strong>First Name:</strong> {firstName}</Typography>
-        <Typography variant="body1"><strong>Last Name:</strong> {lastName}</Typography>
-        <Typography variant="body1"><strong>Email:</strong> {email}</Typography>
-        <Typography variant="body1"><strong>Type:</strong> {getTypeLabel(type)}</Typography>
-        {qualification && <Typography variant="body1"><strong>Qualification:</strong> {qualification}</Typography>}
-        {description && <Typography variant="body1"><strong>Description:</strong> {description}</Typography>}
-        {licenseNumber && <Typography variant="body1"><strong>License Number:</strong> {licenseNumber}</Typography>}
-        {licenseCategory && <Typography variant="body1"><strong>License Category:</strong> {licenseCategory}</Typography>}
-        {tachographLabel && <Typography variant="body1"><strong>Tachograph Label:</strong> {tachographLabel}</Typography>}
-        <Typography variant="body1"><strong>Assigned Mobile:</strong> {assignedMobile || "Unassigned"}</Typography>
-        <Typography variant="body1"><strong>Assigned Vehicle:</strong> {assignedVehicle || "Unassigned"}</Typography>
-        {image && (
-          <CardMedia
-            component="img"
-            height="300"
-            style={{ objectFit: 'contain' }}
-            image={imageUrl}
-            alt="Profile Image"
-          />
+        <TextField
+          label="ID"
+          value={
+            accountType === 'Client' ? accountData.idClient :
+            accountType === 'Driver' ? accountData.idDriver :
+            accountType === 'Coordinator' ? accountData.idCoordinator :
+            ''
+          }
+          fullWidth
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="outlined"
+          margin="normal"
+        />
+        <TextField
+          label="First Name"
+          value={accountData.firstName}
+          fullWidth
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="outlined"
+          margin="normal"
+        />
+        <TextField
+          label="Last Name"
+          value={accountData.lastName}
+          fullWidth
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="outlined"
+          margin="normal"
+        />
+        <TextField
+          label="Email"
+          value={accountData.email}
+          fullWidth
+          InputProps={{
+            readOnly: true,
+          }}
+          variant="outlined"
+          margin="normal"
+        />
+        {accountType === 'Client' && (
+          <>
+            <TextField
+              label="Type"
+              value="Client"
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Store"
+              value={accountData.store}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+          </>
+        )}
+        {accountType === 'Driver' && (
+          <>
+            <TextField
+              label="License Number"
+              value={accountData.licenseNumber}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="License Category"
+              value={accountData.licenseCategory}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Tachograph Label"
+              value={accountData.tachographLabel}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Tachograph Issue Date"
+              value={accountData.tachographIssueDate}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Tachograph Expiry Date"
+              value={accountData.tachographExpiryDate}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Type"
+              value="Driver"
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+          </>
+        )}
+        {accountType === 'Coordinator' && (
+          <>
+            <TextField
+              label="Qualification"
+              value={accountData.qualification}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Description"
+              value={accountData.description}
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+            <TextField
+              label="Type"
+              value="Coordinator"
+              fullWidth
+              InputProps={{
+                readOnly: true,
+              }}
+              variant="outlined"
+              margin="normal"
+            />
+          </>
+        )}
+        {accountData.image && (
+          <div style={{ textAlign: 'center', margin: '20px 0' }}>
+            <img src={`http://localhost:8515${accountData.image}`} alt="Profile" style={{ maxWidth: '100%', height: 'auto' }} />
+          </div>
         )}
       </DialogContent>
       <DialogActions>
-        <Button onClick={onClose} color="primary">Close</Button>
+        <Button onClick={onClose}>Cancel</Button>
       </DialogActions>
     </Dialog>
   );

@@ -1,16 +1,32 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, TextField, MenuItem } from '@mui/material';
+import axios from 'axios';
 
 function EditItem({ item, onSave, onClose, fields }) {
   const [formData, setFormData] = useState({});
   const [errors, setErrors] = useState({});
+  const [clients, setClients] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    if (item) {
-      console.log("Editing item: ", item);
+    if (item && !isInitialized) {
       setFormData(item);
+      setIsInitialized(true);
     }
-  }, [item]);
+  }, [item, isInitialized]);
+
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await axios.get('http://localhost:8515/api/Client/GetClients');
+        setClients(response.data);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+      }
+    };
+    fetchClients();
+  }, []);
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -19,8 +35,6 @@ function EditItem({ item, onSave, onClose, fields }) {
     if (field) {
       if (field.required && !value) {
         error = `${field.label} is required`;
-      } else if (field.pattern && !new RegExp(field.pattern).test(value)) {
-        error = field.errorMessage || `Invalid format for ${field.label}`;
       } else if (field.maxLength && value.length > field.maxLength) {
         error = `${field.label} cannot be longer than ${field.maxLength} characters`;
       }
@@ -30,7 +44,8 @@ function EditItem({ item, onSave, onClose, fields }) {
   };
 
   const handleSave = async () => {
-    setErrors({});
+    if (isSaving) return;
+    setIsSaving(true);
     try {
       await onSave(formData);
       onClose();
@@ -41,33 +56,60 @@ function EditItem({ item, onSave, onClose, fields }) {
       } else {
         console.error("Unexpected error:", error);
       }
+    } finally {
+      setIsSaving(false);
     }
   };
 
+  const handleDialogClose = () => {
+    onClose();
+  };
+
   return (
-    <Dialog open={true} onClose={onClose}>
+    <Dialog open={true} onClose={handleDialogClose}>
       <DialogTitle>Edit Item</DialogTitle>
       <DialogContent>
         {fields.map((field) => (
-          <TextField
-            key={field.name}
-            name={field.name}
-            label={`${field.label} ${field.pattern ? `(format: ${field.placeholder})` : ''}`}
-            value={formData[field.name] || ''}
-            onChange={handleChange}
-            fullWidth
-            margin="normal"
-            error={!!errors[field.name]}
-            helperText={errors[field.name] ? errors[field.name][0] : ''}
-            type={field.type || 'text'}
-            InputLabelProps={{ shrink: true }}
-            placeholder={formData[field.name] || field.placeholder || ''}
-          />
+          field.type === 'select' ? (
+            <TextField
+              key={field.name}
+              select
+              name={field.name}
+              label={field.label}
+              value={formData[field.name] || ''}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              error={!!errors[field.name]}
+              helperText={errors[field.name]}
+              InputLabelProps={{ shrink: true }}
+            >
+              {clients.map(client => (
+                <MenuItem key={client.idClient} value={`${client.firstName} ${client.lastName}`}>
+                  {client.firstName} {client.lastName}
+                </MenuItem>
+              ))}
+            </TextField>
+          ) : (
+            <TextField
+              key={field.name}
+              name={field.name}
+              label={field.label}
+              value={formData[field.name] || ''}
+              onChange={handleChange}
+              fullWidth
+              margin="normal"
+              error={!!errors[field.name]}
+              helperText={errors[field.name]}
+              type={field.type || 'text'}
+              InputLabelProps={{ shrink: true }}
+            />
+          )
         ))}
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleSave} variant="contained" color="primary">Save</Button>
-        <Button onClick={onClose}>Cancel</Button>
+        <Button onClick={handleSave} variant="contained" color="primary" disabled={isSaving}>Save</Button>
+        <Button onClick={handleDialogClose}>Cancel</Button>
       </DialogActions>
     </Dialog>
   );

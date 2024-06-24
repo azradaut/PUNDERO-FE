@@ -108,7 +108,7 @@ const MapCoordinator = () => {
     const fetchData = async () => {
         try {
             const [storesResponse, warehousesResponse, driversResponse] = await Promise.all([
-                axios.get('http://localhost:8515/api/Stores/GetStores'),
+                axios.get('http://localhost:8515/api/Stores'),
                 axios.get('http://localhost:8515/api/Warehouses/GetWarehouses'),
                 axios.get('http://localhost:8515/api/Location/getall')
             ]);

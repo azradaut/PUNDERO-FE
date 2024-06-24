@@ -12,12 +12,15 @@ import PeopleIcon from '@mui/icons-material/People';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import MobileFriendlyIcon from '@mui/icons-material/MobileFriendly';
 import CommuteIcon from '@mui/icons-material/Commute';
+import LocalMallIcon from '@mui/icons-material/LocalMall';
+import StoreIcon from '@mui/icons-material/Store';
 import MapIcon from '@mui/icons-material/Map';
 import ReceiptIcon from '@mui/icons-material/Receipt';
 import PendingIcon from '@mui/icons-material/HourglassEmpty';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useNotification } from '../contexts/NotificationContext';
 import NotificationPopup from '../pages/NotificationPopup';
+import Stores from '../pages/Coordinator/Stores';
 import axios from 'axios';
 
 const CoordinatorNavbar = () => {
@@ -83,6 +86,14 @@ const CoordinatorNavbar = () => {
                 <ListItem button component={Link} to="/coordinator/pending-invoices" selected={location.pathname === '/coordinator/pending-invoices'}>
                     <ListItemIcon><PendingIcon /></ListItemIcon>
                     <ListItemText primary="Pending Invoices" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/stores" selected={location.pathname === '/coordinator/stores'}>
+                    <ListItemIcon><StoreIcon /></ListItemIcon>
+                    <ListItemText primary="Stores" />
+                </ListItem>
+                <ListItem button component={Link} to="/coordinator/products_coordinator" selected={location.pathname === '/coordinator/products_coordinator'}>
+                    <ListItemIcon><LocalMallIcon /></ListItemIcon>
+                    <ListItemText primary="Products" />
                 </ListItem>
                 <ListItem button component={Link} to="/coordinator/map" selected={location.pathname === '/coordinator/map'}>
                     <ListItemIcon><MapIcon /></ListItemIcon>

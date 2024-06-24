@@ -1,98 +1,145 @@
 import React, { useState, useEffect } from 'react';
-import { Button } from '@mui/material';
-import ItemTable from '../../components/ItemTable';
-import FilterBar from '../../components/FilterBar';
-import AddClient from '../../components/AddClient';
+import { Button, Dialog, DialogTitle, DialogContent, Table, TableHead, TableBody, TableRow, TableCell } from '@mui/material';
+import axios from 'axios';
+import AddAccount from '../../components/AddAccount';
+import EditAccount from '../../components/EditAccount';
+import Alerts from '../../components/Alerts';
 import ViewAccount from '../../components/ViewAccount';
 
-function Clients() {
-  const [clients, setClients] = useState([]);
-  const [filteredClients, setFilteredClients] = useState([]);
-  const [searchText, setSearchText] = useState('');
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [viewAccount, setViewAccount] = useState(null);
+const Clients = () => {
+    const [clients, setClients] = useState([]);
+    const [selectedClient, setSelectedClient] = useState(null);
+    const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [isEdit, setIsEdit] = useState(false);
+    const [alertOpen, setAlertOpen] = useState(false);
+    const [alertMessage, setAlertMessage] = useState('');
+    const [alertSeverity, setAlertSeverity] = useState('success');
+    const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+    useEffect(() => {
+        fetchClients();
+    }, []);
 
-  const fetchData = async () => {
-    try {
-      const response = await fetch('http://localhost:8515/api/Client/GetClients');
-      const data = await response.json();
-      setClients(data);
-      setFilteredClients(data);
-    } catch (error) {
-      console.error('Error fetching clients:', error);
-    }
-  };
+    const fetchClients = async () => {
+        try {
+            const response = await axios.get('http://localhost:8515/api/Client/GetClients');
+            setClients(response.data);
+        } catch (error) {
+            console.error('Error fetching clients:', error);
+        }
+    };
 
-  const handleSearchChange = (newSearchText) => {
-    setSearchText(newSearchText);
-    const filteredResult = clients.filter((client) => {
-      return Object.values(client).some((value) =>
-        typeof value === 'string' && value.toLowerCase().includes(newSearchText.toLowerCase())
-      );
-    });
-    setFilteredClients(filteredResult);
-  };
+    const handleAddClient = () => {
+        setIsEdit(false);
+        setIsDialogOpen(true);
+    };
 
-  const handleAddClient = async (formData) => {
-    try {
-      console.log("Sending Form Data: ", formData);
-      const response = await fetch('http://localhost:8515/api/Client/AddClient', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(formData)
-      });
-      if (response.ok) {
-        fetchData();
-        setShowAddDialog(false);
-      } else {
-        const errorData = await response.json();
-        console.error('Error adding client:', errorData);
-      }
-    } catch (error) {
-      console.error('Error adding client:', error);
-    }
-  };
+    const handleEditClient = (client) => {
+        setSelectedClient(client);
+        setIsEdit(true);
+        setIsDialogOpen(true);
+    };
 
-  const handleViewClient = (client) => {
-    setViewAccount(client);
-  };
+    const handleViewClient = (accountId) => {
+        setSelectedClient(accountId);
+        setIsViewDialogOpen(true);
+    };
 
-  return (
-    <div>
-      <h2>Clients</h2>
-      <FilterBar onSearchChange={handleSearchChange} />
-      <Button onClick={() => setShowAddDialog(true)}>Add</Button>
-      {filteredClients.length > 0 ? (
-        <ItemTable
-          items={filteredClients}
-          headers={Object.keys(clients[0] || {}).map(header => header)}
-          customActions={(item) => (
-            <Button onClick={() => handleViewClient(item)}>View</Button>
-          )}
-        />
-      ) : (
-        <p>No clients match the current filters.</p>
-      )}
-      {showAddDialog && (
-        <AddClient
-          onAdd={handleAddClient}
-          onClose={() => setShowAddDialog(false)}
-        />
-      )}
-      {viewAccount && (
-        <ViewAccount
-          account={viewAccount}
-          onClose={() => setViewAccount(null)}
-        />
-      )}
-    </div>
-  );
-}
+    const handleDeleteClient = async (clientId) => {
+        try {
+            await axios.delete(`http://localhost:8515/api/Client/DeleteClient/${clientId}`);
+            fetchClients();
+            setAlertMessage('Client deleted successfully!');
+            setAlertSeverity('success');
+            setAlertOpen(true);
+        } catch (error) {
+            console.error('Error deleting client:', error);
+            setAlertMessage('Error deleting client.');
+            setAlertSeverity('error');
+            setAlertOpen(true);
+        }
+    };
+
+    const handleDialogClose = () => {
+        setIsDialogOpen(false);
+        setSelectedClient(null);
+    };
+
+    const handleClientUpdated = () => {
+        fetchClients();
+        handleDialogClose();
+        setAlertMessage(isEdit ? 'Client edited successfully!' : 'Client added successfully!');
+        setAlertSeverity('success');
+        setAlertOpen(true);
+    };
+
+    const handleCloseViewDialog = () => {
+        setIsViewDialogOpen(false);
+        setSelectedClient(null);
+    };
+
+    return (
+        <div>
+            <h2>Clients</h2>
+            <Button variant="contained" color="primary" onClick={handleAddClient}>
+                Add Client
+            </Button>
+            <Table>
+                <TableHead>
+                    <TableRow>
+                        <TableCell>Id</TableCell>
+                        <TableCell>Full Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Store</TableCell>
+                        <TableCell>Actions</TableCell>
+                    </TableRow>
+                </TableHead>
+                <TableBody>
+                    {clients.map((client) => (
+                        <TableRow key={client.idClient}>
+                            <TableCell>{client.idClient}</TableCell>
+                            <TableCell>{`${client.firstName} ${client.lastName}`}</TableCell>
+                            <TableCell>{client.email}</TableCell>
+                            <TableCell>{client.store}</TableCell>
+                            <TableCell>
+                                <Button onClick={() => handleViewClient(client.idAccount)}>View</Button>
+                                <Button onClick={() => handleEditClient(client)}>Edit</Button>
+                                <Button onClick={() => handleDeleteClient(client.idClient)}>Delete</Button>
+                            </TableCell>
+                        </TableRow>
+                    ))}
+                </TableBody>
+            </Table>
+            <Dialog open={isDialogOpen} onClose={handleDialogClose}>
+                <DialogTitle>{isEdit ? 'Edit Client' : 'Add Client'}</DialogTitle>
+                <DialogContent>
+                    {isEdit && selectedClient ? (
+                        <EditAccount
+                            accountType="Client"
+                            accountId={selectedClient.idAccount}
+                            onAccountUpdated={handleClientUpdated}
+                            onClose={handleDialogClose}
+                            additionalFields={[]}
+                        />
+                    ) : (
+                        <AddAccount
+                            accountType="Client"
+                            onAccountAdded={handleClientUpdated}
+                            onClose={handleDialogClose}
+                            additionalFields={[]}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
+            {isViewDialogOpen && <ViewAccount accountType="Client" accountId={selectedClient} onClose={handleCloseViewDialog} />}
+            <Alerts
+                open={alertOpen}
+                message={alertMessage}
+                severity={alertSeverity}
+                onClose={() => setAlertOpen(false)}
+            />
+        </div>
+    );
+};
 
 export default Clients;
