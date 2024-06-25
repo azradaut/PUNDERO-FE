@@ -13,7 +13,7 @@ const PoiMarkers = ({ pois, map }) => {
     const [markers, setMarkers] = useState({});
     const [selectedPoi, setSelectedPoi] = useState(null);
     const infoWindowRef = useRef(null);
-    const markersRef = useRef({}); // da se prate markeri
+    const markersRef = useRef({});
 
     useEffect(() => {
         if (map && !infoWindowRef.current) {
@@ -105,6 +105,10 @@ const MapCoordinator = () => {
     const [locations, setLocations] = useState([]);
     const mapRef = useRef(null);
 
+    const isValidCoordinate = (lat, lng) => {
+        return typeof lat === 'number' && !isNaN(lat) && typeof lng === 'number' && !isNaN(lng);
+    };
+
     const fetchData = async () => {
         try {
             const [storesResponse, warehousesResponse, driversResponse] = await Promise.all([
@@ -115,28 +119,28 @@ const MapCoordinator = () => {
 
             const stores = storesResponse.data.map(store => ({
                 key: `store-${store.id || Math.random().toString(36).substr(2, 9)}`,
-                location: { lat: store.latitude, lng: store.longitude },
+                location: isValidCoordinate(store.latitude, store.longitude) ? { lat: store.latitude, lng: store.longitude } : null,
                 name: store.name,
                 address: store.address,
                 type: 'store'
-            }));
+            })).filter(store => store.location !== null);
 
             const warehouses = warehousesResponse.data.map(warehouse => ({
                 key: `warehouse-${warehouse.id || Math.random().toString(36).substr(2, 9)}`,
-                location: { lat: warehouse.latitude, lng: warehouse.longitude },
-                name: warehouse.name || 'Unnamed Warehouse', //Jer imamo skladišta bez imena
+                location: isValidCoordinate(warehouse.latitude, warehouse.longitude) ? { lat: warehouse.latitude, lng: warehouse.longitude } : null,
+                name: warehouse.name || 'Unnamed Warehouse',
                 address: warehouse.address,
                 type: 'warehouse'
-            }));
+            })).filter(warehouse => warehouse.location !== null);
 
             const drivers = driversResponse.data.map(driver => ({
                 key: `driver-${driver.driverId}`,
-                location: { lat: driver.lkLatitude, lng: driver.lkLongitude },
+                location: isValidCoordinate(driver.lkLatitude, driver.lkLongitude) ? { lat: driver.lkLatitude, lng: driver.lkLongitude } : null,
                 name: `${driver.firstName} ${driver.lastName}`,
                 phone: driver.mobilePhoneNumber,
                 image: `${driver.firstName}${driver.lastName}.jpeg`,
                 type: 'driver'
-            }));
+            })).filter(driver => driver.location !== null);
 
             console.log('Fetched stores:', stores);
             console.log('Fetched warehouses:', warehouses);
@@ -166,7 +170,7 @@ const MapCoordinator = () => {
             <Map
                 defaultZoom={14}
                 defaultCenter={{ lat: 43.856430, lng: 18.413029 }}
-                mapId='YOUR_MAP_ID' //NEMAMO JOS CUSTOM MAPU
+                mapId='YOUR_MAP_ID'
                 onLoad={handleLoad}
                 style={{ width: '100%', height: '100vh' }}
             >

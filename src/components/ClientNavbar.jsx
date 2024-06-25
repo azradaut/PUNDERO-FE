@@ -1,4 +1,3 @@
-// src/components/ClientNavbar.js
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { AppBar, Toolbar, IconButton, Typography, Drawer, Divider, List, ListItem, ListItemText, Badge, Box, ListItemIcon } from '@mui/material';
