@@ -120,7 +120,7 @@ const CoordinatorNavbar = () => {
                     <MenuIcon />
                 </IconButton>
                 <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center' }}>
-                    {/* Dropdown Menus */}
+                    {/* Dropdown menus */}
                     <Button
                         color="inherit"
                         onClick={(e) => handleMenuClick(e, setAnchorEl)}
@@ -132,7 +132,7 @@ const CoordinatorNavbar = () => {
                         open={Boolean(anchorEl)}
                         onClose={() => handleMenuClose(setAnchorEl)}
                     >
-                        <MenuItem component={Link} to="/coordinator/accounts" selected={location.pathname === '/coordinator/accounts'} onClick={() => handleMenuClose(setAnchorEl)}>Accounts</MenuItem>
+                        
                         <MenuItem component={Link} to="/coordinator/coordinators" selected={location.pathname === '/coordinator/coordinators'} onClick={() => handleMenuClose(setAnchorEl)}>Coordinators</MenuItem>
                         <MenuItem component={Link} to="/coordinator/clients" selected={location.pathname === '/coordinator/clients'} onClick={() => handleMenuClose(setAnchorEl)}>Clients</MenuItem>
                         <MenuItem component={Link} to="/coordinator/drivers" selected={location.pathname === '/coordinator/drivers'} onClick={() => handleMenuClose(setAnchorEl)}>Drivers</MenuItem>

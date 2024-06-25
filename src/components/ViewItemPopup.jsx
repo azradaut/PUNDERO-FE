@@ -6,7 +6,7 @@ function ViewItemPopup({ item, onClose }) {
     return null; 
   }
 
-  // Fields to exclude from the view
+  // fields we will not include
   const fieldsToExclude = ['mobileDrivers'];
 
   return (

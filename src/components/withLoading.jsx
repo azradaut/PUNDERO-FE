@@ -1,4 +1,3 @@
-// src/components/withLoading.jsx
 import React from 'react';
 import { useNotification } from '../contexts/NotificationContext';
 import Loading from '../Loading';

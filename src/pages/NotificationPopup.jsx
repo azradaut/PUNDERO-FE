@@ -23,11 +23,7 @@ const NotificationPopup = ({ open, onClose }) => {
             if (role === '1') {
                 window.location.href = `/coordinator/invoices`;
             } else if (role === '3') {
-                if (notification.message.includes('in transit')) {
-                    window.location.href = `/client/client-map`;
-                } else if (notification.message.includes('delivered')) {
-                    window.location.href = `/client/delivered-invoices`;
-                }
+                window.location.href = `/client/client-invoices`;
             }
         } catch (error) {
             console.error('Error marking notification as seen and navigating:', error);
