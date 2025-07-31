@@ -63,7 +63,7 @@ A full system demonstration is available here:
 
 ## Project Team
 
-This project was developed as part of a university course by a team of two, with shared responsibilities across ideation, UI/UX design, frontend/backend development, and testing.
+This project was developed as part of a university course by a team of two, with shared responsibilities.
 
 ---
 
