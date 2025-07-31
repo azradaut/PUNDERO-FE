@@ -53,7 +53,7 @@ The system integrates Google Maps and Google Routes API to:
 
 ## Related Repositories
 
-- **Backend (.NET Core Web API)**: [PUNDERO Backend](https://github.com/akali2410/PUNDERO)
+- **Backend (.NET Core Web API)**: [PUNDERO Backend](https://github.com/azradaut/PUNDERO)
 - **Mobile App (.NET MAUI)**: [PUNDERO Vehicle App](https://github.com/azradaut/Pundero-vehicle)
 
 ## Demo Video
